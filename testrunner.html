@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mocha Tests</title>
+    <link rel="stylesheet" href="node_modules/mocha/mocha.css">
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script src="node_modules/mocha/mocha.js"></script>
+    <script src="node_modules/chai/chai.js"></script>
+	<script>mocha.setup('bdd');</script>
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="ckeditor/ckeditor.js"></script>
+	<script src="ckeditor/samples/js/sample.js"></script>
+    <link rel="stylesheet" href="ckeditor/samples/toolbarconfigurator/lib/codemirror/neo.css">
+    
+    <div id="ckeditor-container">
+		<textarea class="form-control" name="doc"></textarea>
+	</div>
+    <script>
+		var editorElem = document.getElementById("ckeditor-container");
+		var editor = CKEDITOR.replace("doc");
+    </script>
+	<script src="ckeditor/plugins/cite/tests/plugin-spec.js"></script>
+	<script>
+		CKEDITOR.on( 'instanceReady', function( evt ) {
+			mocha.run();
+		});
+	</script>
+
+  </body>
+</html>
