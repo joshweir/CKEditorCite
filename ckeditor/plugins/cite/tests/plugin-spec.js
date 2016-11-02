@@ -15,43 +15,136 @@ describe('insertCitation', function() {
 		it('should create an auto numbered footnote', function() {
 			//insert the citation
 			CKEDITOR.instances.doc.plugins.cite.insertCitation(
-				'test <strong>footnote</strong> data', CKEDITOR.instances.doc);
+				'test <strong>footnote</strong> data1', editor);
 			
 			//get the content
 			var $contents  = $(editor.editable().$);
-			console.log($contents.html());
 			
 			//verify the marker format as expected
-			
+			var $marker = $contents.find('sup[data-footnote-id]');
+			var marker_footnote_id = $marker.attr('data-footnote-id');
+			assert.equal(
+				'<a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
+				marker_footnote_id +'-1" data-citation="test <strong>footnote</strong> data1" data-footnote-id="' + 
+				marker_footnote_id + '">[1]</a>',
+				$marker.html()
+				);
 			
 			//verify the footnote format as expected
-			var $footnotes = $contents.find('.footnotes > ol > li');
-			//console.log($footnotes.html());
-			$footnotes.each(function() {
+			$contents.find('.footnotes > ol > li').each(function() {
 				var $this = $(this);
 				//get the footnote id
 				var footnote_id = $this.attr('data-footnote-id');
 				//check the sup reference back to the marker and value is ^
-				assert.equal($this.find('sup > a').attr('href'),'#footnote-marker-' + footnote_id + '-1');
+				assert.equal(marker_footnote_id, footnote_id);
+				assert.equal($this.find('sup > a').attr('href'),
+					'#footnote-marker-' + footnote_id + '-1');
+				assert.equal($this.attr('id'), 'footnote-' + footnote_id);
 				
 				//check the cite value is correct based on input citation
-				assert.equal( $this.find('cite').value, 'test <strong>footnote</strong> data');
-				
+				assert.equal( $this.find('cite').html(), 
+					'test <strong>footnote</strong> data1');
 			});
 		});
+		
 		it('should create a new footnote auto-incremented when the footnote ' + 
 			'text is different to existing footnotes', function() {
+			//insert 2nd different citation
+			CKEDITOR.instances.doc.plugins.cite.insertCitation(
+				'test <strong>footnote</strong> data2', CKEDITOR.instances.doc);
+			//get the content
+			var $contents  = $(CKEDITOR.instances.doc.editable().$);
 			
+			//verify the marker format as expected and retrieve footnote ids 
+			//for each marker to verify against the footnotes below
+			var marker_footnote_ids = [];
+			var i = 0;
+			$contents.find('sup[data-footnote-id]').each(function(){
+				i++; 
+				var $this = $(this)
+					,marker_footnote_id = $this.attr('data-footnote-id');
+				marker_footnote_ids.push(marker_footnote_id);
+				assert.equal(
+					'<a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
+					marker_footnote_id +'-1" data-citation="test <strong>footnote</strong> data'+i+'" data-footnote-id="' + 
+					marker_footnote_id + '">['+i+']</a>',
+					$this.html()
+					);
+			});
+			assert.equal(marker_footnote_ids.length, 2);
+			
+			//verify the footnote format as expected and footnote ids 
+			//match the marker footnote ids in order
+			i = 0;
+			$contents.find('.footnotes > ol > li').each(function() {
+				var $this = $(this);
+				//get the footnote id
+				var footnote_id = $this.attr('data-footnote-id');
+				//check the sup reference back to the marker and value is ^
+				assert.equal(marker_footnote_ids[i], footnote_id);
+				assert.equal($this.find('sup > a').attr('href'),
+					'#footnote-marker-' + footnote_id + '-1');
+				assert.equal($this.attr('id'), 'footnote-' + footnote_id);
+				
+				//check the cite value is correct based on input citation
+				assert.equal( $this.find('cite').html(), 
+					'test <strong>footnote</strong> data' + (i+1));
+				i++;
+			});
 		});
+		
 		it('should reference the same numbered footnote when cited multiple times', function() {
+			//insert same 2nd citation again
+			CKEDITOR.instances.doc.plugins.cite.insertCitation(
+				'test <strong>footnote</strong> data2', CKEDITOR.instances.doc);
+			//get the content
+			var $contents  = $(editor.editable().$);
 			
+			//verify the marker format as expected and retrieve footnote ids 
+			//for each marker to verify against the footnotes below
+			var marker_footnote_ids = [];
+			var i = 0;
+			$contents.find('sup[data-footnote-id]').each(function(){
+				i++; 
+				var $this = $(this)
+					,marker_footnote_id = $this.attr('data-footnote-id');
+				marker_footnote_ids.push(marker_footnote_id);
+				assert.equal(
+					'<a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
+					marker_footnote_id +'-'+(i==3 ? 2 : 1)+'" data-citation="test <strong>footnote</strong> data'+(i==3 ? 2 : i)+'" data-footnote-id="' + 
+					marker_footnote_id + '">['+i+']</a>',
+					$this.html()
+					);
+			});
+			assert.equal(marker_footnote_ids.length, 3);
+			
+			//verify the footnote format as expected and footnote ids 
+			//match the marker footnote ids in order
+			i = 0;
+			$contents.find('.footnotes > ol > li').each(function() {
+				var $this = $(this);
+				//get the footnote id
+				var footnote_id = $this.attr('data-footnote-id');
+				//check the sup reference back to the marker and value is ^
+				assert.equal(marker_footnote_ids[i], footnote_id);
+				assert.equal($this.find('sup > a').attr('href'),
+					'#footnote-marker-' + footnote_id + '-1');
+				assert.equal($this.attr('id'), 'footnote-' + footnote_id);
+				
+				//check the cite value is correct based on input citation
+				assert.equal( $this.find('cite').html(), 
+					'test <strong>footnote</strong> data' + (i+1));
+				i++;
+			});
 		});
+
 	});
 	describe('custom inline citation marker format', function() {
 		
 	});
 });
 
+/*
 describe('generateMarkerHtml', function() {
     describe('default mode (auto numbered footnotes)', function() {
 		it('should return a numbered footnote wrapped in anchor', function() {
@@ -89,5 +182,5 @@ describe('generateMarkerHtml', function() {
 		});
 	});
 });
-
+*/
 
