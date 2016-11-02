@@ -365,14 +365,24 @@
 			var the_html = '';
 			if (inline_citation) {
 				//inline_citation will include an anchor placement so could be like this:
-				//Clark et al. [!a!]2015[/!a!]asdf
+				//Clark et al. [!a!]2015[/!a!] foo
 				//if there are no anchors, assume anchor around the entire inline citation 
-			
+				if (!inline_citation.match(/\[!a!\]/)) {
+					the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+						'" data-citation="'+citation_text+'" data-inline-citation="'+inline_citation+'" data-footnote-id="' + footnote_id + '">' + inline_citation + '</a>';
+				}
 				//else, split by opening anchor 
 				//	in 1st part, keep that to join at the end 
 				//	then in 2nd part, split by closing anchor,
 				//		then with 1st part, wrap this in the anchor
 				//		with 2nd part, keep this to join at the end. 
+				else {
+					var parts = inline_citation.split(/\[!a!\]/);
+					var parts_2 = parts[1].split(/\[\/!a!\]/);
+					the_html = parts[0] + '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+						'" data-citation="'+citation_text+'" data-inline-citation="'+inline_citation+'" data-footnote-id="' + footnote_id + '">' + parts_2[0] + '</a>' + 
+						(parts_2[1] ? parts_2[1] : '');
+				}
 			}
 			else {
 				the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 

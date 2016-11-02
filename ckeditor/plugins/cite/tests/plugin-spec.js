@@ -169,9 +169,6 @@ describe('generateMarkerHtml', function() {
 		it('should apply the anchor transformations [!a!] -> <a.. ' + 
 			'where no text after anchor close', function() {
 			assert.equal(
-				//change so that the href doesnt use the footnote number (n) anymore, instead 
-				//uses the footnote-id, change all references to this in rest of plugin
-				//also change non-inline-citation to use this also
 				'foobar <a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
 					'" data-citation="test citation" data-inline-citation="foobar [!a!]inside anchor[/!a!]" data-footnote-id="' + 
 					'foo1' + '">inside anchor</a>',
@@ -180,14 +177,36 @@ describe('generateMarkerHtml', function() {
 				);
 		});
 		it('should apply the anchor transformations [!a!] -> <a.. where no text before the anchor open but text after anchor close pattern', function() {
-			CKEDITOR.instances.doc.plugins.cite.insertCitation('test <strong>footnote</strong> data', CKEDITOR.instances.doc);
-				assert.equal(1,0);
+			assert.equal(
+				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
+					'" data-citation="test citation" data-inline-citation="[!a!]inside anchor[/!a!] foobar" data-footnote-id="' + 
+					'foo1' + '">inside anchor</a> foobar',
+				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
+					1, 'test citation', 2, 3, 'foo1', '[!a!]inside anchor[/!a!] foobar')
+				);
 		});
 		it('should apply the anchor transformations [!a!] -> <a.. where no text before or after the anchor patterns', function() {
-			CKEDITOR.instances.doc.plugins.cite.insertCitation('test <strong>footnote</strong> data', CKEDITOR.instances.doc);
-			assert.equal(1,0);
+			assert.equal(
+				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
+					'" data-citation="test citation" data-inline-citation="[!a!]inside anchor[/!a!]" data-footnote-id="' + 
+					'foo1' + '">inside anchor</a>',
+				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
+					1, 'test citation', 2, 3, 'foo1', '[!a!]inside anchor[/!a!]')
+				);
 		});
 		it('should apply the anchor transformations automatically to the entire string if the anchor pattern doesnt exist', function() {
+			assert.equal(
+				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
+					'" data-citation="test citation" data-inline-citation="inside anchor" data-footnote-id="' + 
+					'foo1' + '">inside anchor</a>',
+				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
+					1, 'test citation', 2, 3, 'foo1', 'inside anchor')
+				);
+		});
+		it('should handle citations with double quotes within the citation', function() {
+			assert.equal(1,0);
+		});
+		it('should handle citations with html special characters within the citation', function() {
 			assert.equal(1,0);
 		});
 	});
