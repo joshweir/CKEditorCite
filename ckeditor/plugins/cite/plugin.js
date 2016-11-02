@@ -144,7 +144,7 @@
             var footnote_marker = '<sup data-citation="'+footnote+
 				'" data-footnote-id="' + footnote_id + 
 				'"'+
-				(inline_citation ? 'data-inline-citation="'+inline_citation+'"' : '')
+				(inline_citation ? ' data-inline-citation="'+inline_citation+'"' : '')
 				+'>X</sup>';
 			editor.insertHtml(footnote_marker);
 			if (is_new) {
@@ -250,6 +250,7 @@
             //    return;
             //}
 
+			/*
 			//prepare the inline footnotes markers store 
 			editor.footnotes_inline_store = {};
 			
@@ -265,6 +266,7 @@
                 }
                 editor.footnotes_inline_store[footnote_id] = inline_footnote;
 			});
+			*/
 			
             // Find all the markers in the document:
             var $markers = $contents.find('sup[data-footnote-id]');
@@ -281,7 +283,7 @@
                 j++;
 				var footnote_id = $(this).attr('data-footnote-id')
                   , citation_text = $(this).attr('data-citation')
-				  , inline_citation_text = $(this).attr('inline-citation')
+				  , inline_citation_text = $(this).attr('data-inline-citation')
 				  , marker_ref
                   , n = data.order.indexOf(footnote_id);
 
@@ -369,7 +371,9 @@
 				//if there are no anchors, assume anchor around the entire inline citation 
 				if (!inline_citation.match(/\[!a!\]/)) {
 					the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
-						'" data-citation="'+citation_text+'" data-inline-citation="'+inline_citation+'" data-footnote-id="' + footnote_id + '">' + inline_citation + '</a>';
+						'" data-citation="'+this.htmlEncode(citation_text).replace(/"/,'_')+'" data-inline-citation="'+
+						this.htmlEncode(inline_citation).replace(/"/,'_')+'" data-footnote-id="' + 
+						footnote_id + '">' + this.htmlEncode(inline_citation) + '</a>';
 				}
 				//else, split by opening anchor 
 				//	in 1st part, keep that to join at the end 
@@ -379,16 +383,27 @@
 				else {
 					var parts = inline_citation.split(/\[!a!\]/);
 					var parts_2 = parts[1].split(/\[\/!a!\]/);
-					the_html = parts[0] + '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
-						'" data-citation="'+citation_text+'" data-inline-citation="'+inline_citation+'" data-footnote-id="' + footnote_id + '">' + parts_2[0] + '</a>' + 
-						(parts_2[1] ? parts_2[1] : '');
+					the_html = this.htmlEncode(parts[0]) + '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+						'" data-citation="'+this.htmlEncode(citation_text).replace(/"/,'_')+'" data-inline-citation="'+this.htmlEncode(inline_citation).replace(/"/,'_')+
+						'" data-footnote-id="' + footnote_id + '">' + this.htmlEncode(parts_2[0]) + '</a>' + 
+						this.htmlEncode((parts_2[1] ? parts_2[1] : ''));
 				}
 			}
 			else {
 				the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
-					'" data-citation="'+citation_text+'" data-footnote-id="' + footnote_id + '">[' + n + ']</a>';
+					'" data-citation="'+this.htmlEncode(citation_text).replace(/"/,'_')+'" data-footnote-id="' + footnote_id + '">[' + n + ']</a>';
 			}
 			return the_html;
+		},
+		
+		htmlEncode: function (value){
+		  //create a in-memory div, set it's inner text(which jQuery automatically encodes)
+		  //then grab the encoded contents back out.  The div never exists on the page.
+		  return $('<div/>').text(value).html();
+		},
+
+		htmlDecode: function (value){
+		  return $('<div/>').html(value).text();
 		}
     });
 }(window.jQuery));

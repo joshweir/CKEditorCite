@@ -140,12 +140,108 @@ describe('insertCitation', function() {
 	});
 	describe('custom inline citation marker format', function() {
 		it('should create a custom inline cited footnote', function() {
+			//insert a new custom inline cited footnote
+			CKEDITOR.instances.doc.plugins.cite.insertCitation(
+				'test <strong>custom footnote</strong> data4', CKEDITOR.instances.doc, '<foo [!a!]inside4[/!a!] bar>');
+			//get the content
+			var $contents  = $(editor.editable().$);
 			
+			//verify the marker format as expected and retrieve footnote ids 
+			//for each marker to verify against the footnotes below
+			var marker_footnote_ids = [];
+			var i = 0;
+			$contents.find('sup[data-footnote-id]').each(function(){
+				i++; 
+				var $this = $(this)
+					,marker_footnote_id = $this.attr('data-footnote-id');
+				marker_footnote_ids.push(marker_footnote_id);
+				if (i >= 4) { //only check the new custom cited, ignore the already tested auto numbered citations
+					assert.equal(
+						'&lt;foo <a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
+						marker_footnote_id +'-'+'1'+'" data-citation="test <strong>custom footnote</strong> data'+
+						i+'" data-inline-citation="'+'<foo [!a!]inside'+i+'[/!a!] bar>'+'" data-footnote-id="' + 
+						marker_footnote_id + '">'+'inside'+i+'</a> bar&gt;',
+						$this.html()
+						);
+				}
+			});
+			assert.equal(marker_footnote_ids.length, 4);
+			
+			//verify the footnote format as expected and footnote ids 
+			//match the marker footnote ids in order
+			i = 0;
+			//console.log($contents.find('.footnotes').html());
+			$contents.find('.footnotes > ol > li').each(function() {
+				i++;
+				var $this = $(this);
+				if (i >= 4) {
+					//get the footnote id
+					var footnote_id = $this.attr('data-footnote-id');
+					//check the sup reference back to the marker and value is ^
+					assert.equal(marker_footnote_ids[i-1], footnote_id);
+					assert.equal($this.find('sup > a').attr('href'),
+						'#footnote-marker-' + footnote_id + '-1');
+					assert.equal($this.attr('id'), 'footnote-' + footnote_id);
+					
+					//check the cite value is correct based on input citation
+					assert.equal( $this.find('cite').html(), 
+						'test <strong>footnote</strong> data' + (i));
+				}
+			});
 		});
 		
 		it('should create a new custom inline cited footnote auto-incremented when the footnote ' + 
 			'text is different to existing footnotes', function() {
+			//insert a new custom inline cited footnote
+			CKEDITOR.instances.doc.plugins.cite.insertCitation(
+				'test <strong>custom footnote</strong> data5', CKEDITOR.instances.doc, '<foo [!a!]inside5[/!a!] bar>');
+			//get the content
+			var $contents  = $(editor.editable().$);
 			
+			//verify the marker format as expected and retrieve footnote ids 
+			//for each marker to verify against the footnotes below
+			var marker_footnote_ids = [];
+			var i = 0;
+			$contents.find('sup[data-footnote-id]').each(function(){
+				i++; 
+				var $this = $(this)
+					,marker_footnote_id = $this.attr('data-footnote-id');
+				marker_footnote_ids.push(marker_footnote_id);
+				if (i >= 4) { //only check the new custom cited, ignore the already tested auto numbered citations
+					assert.equal(
+						'&lt;foo <a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
+						marker_footnote_id +'-'+'1'+'" data-citation="test <strong>custom footnote</strong> data'+
+						i+'" data-inline-citation="'+'<foo [!a!]inside'+i+'[/!a!] bar>'+'" data-footnote-id="' + 
+						marker_footnote_id + '">'+'inside'+i+'</a> bar&gt;',
+						$this.html()
+						);
+				}
+			});
+			assert.equal(marker_footnote_ids.length, 5);
+			
+			//verify the footnote format as expected and footnote ids 
+			//match the marker footnote ids in order
+			i = 0;
+			//console.log(marker_footnote_ids);
+			//console.log($contents.find('.footnotes').html());
+			$contents.find('.footnotes > ol > li').each(function() {
+				i++;
+				var $this = $(this);
+				if (i >= 4) {
+					console.log("in here");
+					//get the footnote id
+					var footnote_id = $this.attr('data-footnote-id');
+					//check the sup reference back to the marker and value is ^
+					assert.equal(marker_footnote_ids[i-1], footnote_id);
+					assert.equal($this.find('sup > a').attr('href'),
+						'#footnote-marker-' + footnote_id + '-1');
+					assert.equal($this.attr('id'), 'footnote-' + footnote_id);
+					
+					//check the cite value is correct based on input citation
+					assert.equal( $this.find('cite').html(), 
+						'test <strong>footnote</strong> data' + (i));
+				}
+			});
 		});
 		
 		it('should reference the same custom inline cited footnote when cited multiple times', function() {
@@ -204,10 +300,29 @@ describe('generateMarkerHtml', function() {
 				);
 		});
 		it('should handle citations with double quotes within the citation', function() {
-			assert.equal(1,0);
+			assert.equal(
+				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
+					'" data-citation="test_ citation" data-inline-citation="inside_ anchor" data-footnote-id="' + 
+					'foo1' + '">inside" anchor</a>',
+				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
+					1, 'test" citation', 2, 3, 'foo1', 'inside" anchor')
+				);
 		});
 		it('should handle citations with html special characters within the citation', function() {
-			assert.equal(1,0);
+			assert.equal(
+				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
+					'" data-citation="test&gt; citation" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
+					'foo1' + '">inside&lt; anchor</a>',
+				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
+					1, 'test> citation', 2, 3, 'foo1', 'inside< anchor')
+				);
+			assert.equal(
+				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
+					'" data-citation="test &lt;strong&gt;citation&lt;/strong&gt;" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
+					'foo1' + '">inside&lt; anchor</a>',
+				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
+					1, 'test <strong>citation</strong>', 2, 3, 'foo1', 'inside< anchor')
+				);
 		});
 	});
 });
