@@ -34,7 +34,7 @@
 
             // Force a reorder on startup to make sure all vars are set: (e.g. footnotes store):
             editor.on('instanceReady', function(evt) {
-                $this.reorderMarkers(editor);
+                $this.reorderMarkers(editor, 'startup');
             });
 
             // Add the reorder change event:
@@ -63,11 +63,14 @@
                 if (footnote_section && footnote_section.$.className.indexOf('footnotes') != -1) {
                     return;
                 }
+				
+				if(localStorage.getItem('reordering_markers') != d.getTime())
+					return;
                 
                 if(localStorage.getItem('reordering_markers') == d.getTime()) {
 					// SetTimeout seems to be necessary (it's used in the core but can't be 100% sure why)
 					setTimeout(function(){
-							$this.reorderMarkers(editor);
+							$this.reorderMarkers(editor, 'change');
 						},
 						0
 					);
@@ -127,7 +130,7 @@
 			//Clark et al. [!a!]2015[/!a!]
 			//todo: within the footnote, add another data attribute to store the inline_citation 
 			this.build(footnote, editor, (inline_citation ? inline_citation.replace(/"/,'') : null));
-        },
+		},
 
         build: function(footnote, editor, inline_citation) {
 			var footnote_id = this.findFootnote(footnote, editor);
@@ -138,16 +141,18 @@
 			}
 			
             // Insert the marker:
-            var footnote_marker = '<sup data-footnote-id="' + footnote_id + '">X</sup>';
-
-            editor.insertHtml(footnote_marker);
-
-            if (is_new) {
+            var footnote_marker = '<sup data-citation="'+footnote+
+				'" data-footnote-id="' + footnote_id + 
+				'"'+
+				(inline_citation ? 'data-inline-citation="'+inline_citation+'"' : '')
+				+'>X</sup>';
+			editor.insertHtml(footnote_marker);
+			if (is_new) {
                 editor.fire('lockSnapshot');
                 this.addFootnote(this.buildFootnote(footnote_id, footnote, false, editor, inline_citation), editor);
                 editor.fire('unlockSnapshot');
             }
-            this.reorderMarkers(editor);
+            this.reorderMarkers(editor,'build');
         },
 		
 		findFootnote: function(footnote, editor) {
@@ -186,19 +191,19 @@
                     }
                 }
             }
-            footnote = '<li id="footnote' + prefix + '-' + order + '" data-footnote-id="' + footnote_id + '"' + 
+            footnote = '<li id="footnote' + prefix + '-' + footnote_id + '" data-footnote-id="' + footnote_id + '"' + 
 				(inline_citation ? ' data-inline-citation="' + inline_citation + '"' : '') + '>' + 
 				(inline_citation ? '' : '<sup>' + links + '</sup>') + '<cite>' + 
 				footnote_text + '</cite></li>';
             return footnote;
         },
 
-        addFootnote: function(footnote, editor) {
+        addFootnote: function(footnote, editor, replace) {
             var $contents  = $(editor.editable().$);
             var $footnotes = $contents.find('.footnotes');
 
             if ($footnotes.length == 0) {
-                var header_title = editor.config.footnotesTitle ? editor.config.footnotesTitle : 'Footnotes';
+				var header_title = editor.config.footnotesTitle ? editor.config.footnotesTitle : 'Footnotes';
                 var header_els = ['<h2>', '</h2>'];//editor.config.editor.config.footnotesHeaderEls
                 if (editor.config.footnotesHeaderEls) {
                     header_els = editor.config.footnotesHeaderEls;
@@ -211,7 +216,10 @@
                 // Insert the container:
                 editor.insertHtml(container);
             } else {
-                $footnotes.find('ol').append(footnote);
+                if (replace)
+					$footnotes.find('ol').html(footnote);
+				else 
+					$footnotes.find('ol').append(footnote);
             }
         },
 
@@ -224,22 +232,23 @@
             return id;
         },
 
-        reorderMarkers: function(editor) {
-            editor.fire('lockSnapshot');
+        reorderMarkers: function(editor, context) {
+			editor.fire('lockSnapshot');
             var prefix  = editor.config.footnotesPrefix ? '-' + editor.config.footnotesPrefix : '';
             var $contents = $(editor.editable().$);
             var data = {
                 order: [],
-                occurrences: {}
+                occurrences: {},
+				original_citation_text: [],
+				inline_citation: []
             };
             var self = this;
-
 			// Check that there's a footnotes section. If it's been deleted the markers are useless:
-            if ($contents.find('.footnotes').length == 0) {
-                $contents.find('sup[data-footnote-id]').remove();
-                editor.fire('unlockSnapshot');
-                return;
-            }
+            //if ($contents.find('.footnotes').length == 0) {
+            //    $contents.find('sup[data-footnote-id]').remove();
+            //    editor.fire('unlockSnapshot');
+            //    return;
+            //}
 
 			//prepare the inline footnotes markers store 
 			editor.footnotes_inline_store = {};
@@ -267,29 +276,36 @@
             }
 
             // Otherwise reorder the markers:
-            $markers.each(function(){
-                var footnote_id = $(this).attr('data-footnote-id')
-                  , marker_ref
+            var j = 0;
+			$markers.each(function(){
+                j++;
+				var footnote_id = $(this).attr('data-footnote-id')
+                  , citation_text = $(this).attr('data-citation')
+				  , inline_citation_text = $(this).attr('inline-citation')
+				  , marker_ref
                   , n = data.order.indexOf(footnote_id);
 
                 // If this is the markers first occurrence:
                 if (n == -1) {
                     // Store the id:
                     data.order.push(footnote_id);
+					data.original_citation_text.push(citation_text);
+					data.inline_citation.push(inline_citation_text);
                     n = data.order.length;
                     data.occurrences[footnote_id] = 1;
-                    marker_ref = n + '-1';
+                    //marker_ref = n + '-1';
+					marker_ref = '1';
                 } else {
                     // Otherwise increment the number of occurrences:
                     // (increment n due to zero-index array)
                     n++;
                     data.occurrences[footnote_id]++;
-                    marker_ref = n + '-' + data.occurrences[footnote_id];
+                    //marker_ref = n + '-' + data.occurrences[footnote_id];
+					marker_ref = data.occurrences[footnote_id];
                 }
                 // Replace the marker contents:
-                var marker = self.generateMarkerHtml(prefix, n, marker_ref, footnote_id, 
-						editor.footnotes_inline_store[footnote_id]);
-				console.log(marker);
+                var marker = self.generateMarkerHtml(prefix, citation_text, j, marker_ref, footnote_id, 
+						inline_citation_text);
 				$(this).html(marker);
             });
 
@@ -299,25 +315,29 @@
             // Then rebuild the Footnotes content to match marker order:
             var footnotes     = ''
               , footnote_text = ''
+			  , inline_citation_text = ''
               , footnote_id
               , i = 0
               , l = data.order.length;
             for (i; i < l; i++) {
                 footnote_id   = data.order[i];
-                footnote_text = $contents.find('.footnotes [data-footnote-id=' + footnote_id + '] cite').html();
-                // If the footnotes text can't be found in the editor, it may be in the tmp store
+				footnote_text = data.original_citation_text[i]; //$contents.find('.footnotes [data-footnote-id=' + footnote_id + '] cite').html();
+
+				// If the footnotes text can't be found in the editor, it may be in the tmp store
                 // following a cut:
                 if (!footnote_text) {
-                    footnote_text = editor.footnotes_tmp[footnote_id];
+					footnote_text = (editor.footnotes_tmp && editor.footnotes_tmp[footnote_id] ? editor.footnotes_tmp[footnote_id] : null);
                 }
+				
                 footnotes += this.buildFootnote(footnote_id, footnote_text, data, editor);
                 // Store the footnotes for later use (post cut/paste):
                 editor.footnotes_store[footnote_id] = footnote_text;
-            }
-
-            // Insert the footnotes into the list:
-            $contents.find('.footnotes ol').html(footnotes);
-
+			}
+			
+			// Insert the footnotes into the list:
+            //$contents.find('.footnotes ol').html(footnotes);
+			this.addFootnote(footnotes, editor, true);
+			
             // Next we need to reinstate the 'editable' properties of the footnotes.
             // (we have to do this individually due to Widgets 'fireOnce' for editable selectors)
             var el = $contents.find('.footnotes')
@@ -331,16 +351,17 @@
                     break;
                 }
             }
-            // Then we `initEditable` each footnote, giving it a unique selector:
-            for (i in data.order) {
-                n = parseInt(i) + 1;
-                footnote_widget.initEditable('footnote_' + n, {selector: '#footnote' + prefix + '-' + n +' cite', allowedContent: 'a[href]; cite[*](*); em strong span'});
-            }
-
+			if (footnote_widget) {
+				// Then we `initEditable` each footnote, giving it a unique selector:
+				for (i in data.order) {
+					n = parseInt(i) + 1;
+					footnote_widget.initEditable('footnote_' + n, {selector: '#footnote' + prefix + '-' + n +' cite', allowedContent: 'a[href]; cite[*](*); em strong span'});
+				}
+			}
             editor.fire('unlockSnapshot');
         },
         
-        generateMarkerHtml: function(prefix, n, marker_ref, footnote_id, inline_citation) {
+        generateMarkerHtml: function(prefix, citation_text, n, marker_ref, footnote_id, inline_citation) {
 			var the_html = '';
 			if (inline_citation) {
 				//inline_citation will include an anchor placement so could be like this:
@@ -355,7 +376,7 @@
 			}
 			else {
 				the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
-					'" rel="footnote" data-footnote-id="' + footnote_id + '">[' + n + ']</a>';
+					'" data-citation="'+citation_text+'" data-footnote-id="' + footnote_id + '">[' + n + ']</a>';
 			}
 			return the_html;
 		}
