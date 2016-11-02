@@ -354,9 +354,8 @@
 				//		with 2nd part, keep this to join at the end. 
 			}
 			else {
-				the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + marker_ref + 
-					'" rel="footnote" data-footnote-id="' + footnote_id + '"' + 
-					' name= "footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + '">[' + n + ']</a>';
+				the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+					'" rel="footnote" data-footnote-id="' + footnote_id + '">[' + n + ']</a>';
 			}
 			return the_html;
 		}

@@ -32,7 +32,7 @@ describe('insertCitation', function() {
 				//get the footnote id
 				var footnote_id = $this.attr('data-footnote-id');
 				//check the sup reference back to the marker and value is ^
-				assert.equal($this.find('sup > a').attr('href'),'#footnote-marker-1-' + footnote_id);
+				assert.equal($this.find('sup > a').attr('href'),'#footnote-marker-' + footnote_id + '-1');
 				
 				//check the cite value is correct based on input citation
 				assert.equal( $this.find('cite').value, 'test <strong>footnote</strong> data');
