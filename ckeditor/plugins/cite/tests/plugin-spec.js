@@ -137,22 +137,31 @@ describe('insertCitation', function() {
 				i++;
 			});
 		});
-
 	});
 	describe('custom inline citation marker format', function() {
+		it('should create a custom inline cited footnote', function() {
+			
+		});
 		
+		it('should create a new custom inline cited footnote auto-incremented when the footnote ' + 
+			'text is different to existing footnotes', function() {
+			
+		});
+		
+		it('should reference the same custom inline cited footnote when cited multiple times', function() {
+			
+		});
 	});
 });
 
-/*
 describe('generateMarkerHtml', function() {
     describe('default mode (auto numbered footnotes)', function() {
 		it('should return a numbered footnote wrapped in anchor', function() {
 			assert.equal(
-				'<a href="#footnote' + '1' + '-' + '2' + '" id="footnote-marker' + '1' + '-' + '3' + 
-					'" rel="footnote" data-footnote-id="' + 'foo1' + '">[' + '2' + ']</a>',
+				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
+					'" data-citation="test citation" data-footnote-id="' + 'foo1' + '">[' + '2' + ']</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 2, 3, 'foo1', null)
+					1, 'test citation', 2, 3, 'foo1', null)
 				);
 		});
 	});
@@ -163,10 +172,11 @@ describe('generateMarkerHtml', function() {
 				//change so that the href doesnt use the footnote number (n) anymore, instead 
 				//uses the footnote-id, change all references to this in rest of plugin
 				//also change non-inline-citation to use this also
-				'foobar <a href="#footnote' + '1' + '-' + '2' + '" id="footnote-marker' + '1' + '-' + '3' + 
-					'" rel="footnote" data-footnote-id="' + 'foo1' + '">inside anchor</a>',
+				'foobar <a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
+					'" data-citation="test citation" data-inline-citation="foobar [!a!]inside anchor[/!a!]" data-footnote-id="' + 
+					'foo1' + '">inside anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 2, 3, 'foo1', 'foobar [!a!]inside anchor[/!a!]')
+					1, 'test citation', 2, 3, 'foo1', 'foobar [!a!]inside anchor[/!a!]')
 				);
 		});
 		it('should apply the anchor transformations [!a!] -> <a.. where no text before the anchor open but text after anchor close pattern', function() {
@@ -182,5 +192,4 @@ describe('generateMarkerHtml', function() {
 		});
 	});
 });
-*/
 
