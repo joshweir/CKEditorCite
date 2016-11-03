@@ -25,7 +25,7 @@ describe('insertCitation', function() {
 			var marker_footnote_id = $marker.attr('data-footnote-id');
 			assert.equal(
 				'<a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
-				marker_footnote_id +'-1" data-citation="test <strong>footnote</strong> data1" data-footnote-id="' + 
+				marker_footnote_id +'-1" data-citation="test <strong>footnote</strong> data1" data-citation-modified="test <strong>footnote</strong> data1" data-footnote-id="' + 
 				marker_footnote_id + '">[1]</a>',
 				$marker.html()
 				);
@@ -66,7 +66,7 @@ describe('insertCitation', function() {
 				marker_footnote_ids.push(marker_footnote_id);
 				assert.equal(
 					'<a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
-					marker_footnote_id +'-1" data-citation="test <strong>footnote</strong> data'+i+'" data-footnote-id="' + 
+					marker_footnote_id +'-1" data-citation="test <strong>footnote</strong> data'+i+'" data-citation-modified="test <strong>footnote</strong> data'+i+'" data-footnote-id="' + 
 					marker_footnote_id + '">['+i+']</a>',
 					$this.html()
 					);
@@ -111,7 +111,7 @@ describe('insertCitation', function() {
 				marker_footnote_ids.push(marker_footnote_id);
 				assert.equal(
 					'<a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
-					marker_footnote_id +'-'+(i==3 ? 2 : 1)+'" data-citation="test <strong>footnote</strong> data'+(i==3 ? 2 : i)+'" data-footnote-id="' + 
+					marker_footnote_id +'-'+(i==3 ? 2 : 1)+'" data-citation="test <strong>footnote</strong> data'+(i==3 ? 2 : i)+'" data-citation-modified="test <strong>footnote</strong> data'+(i==3 ? 2 : i)+'" data-footnote-id="' + 
 					marker_footnote_id + '">['+(i==3 ? 2 : i)+']</a>',
 					$this.html()
 					);
@@ -142,7 +142,7 @@ describe('insertCitation', function() {
 		it('should create a custom inline cited footnote', function() {
 			//insert a new custom inline cited footnote
 			CKEDITOR.instances.doc.plugins.cite.insertCitation(
-				'test <strong>custom footnote</strong> data4', CKEDITOR.instances.doc, '<foo [!a!]inside4[/!a!] bar>');
+				'test <strong>custom footnote</strong> data4', CKEDITOR.instances.doc, '<foo [!a!]"inside4[/!a!] bar>');
 			//get the content
 			var $contents  = $(editor.editable().$);
 			
@@ -159,8 +159,9 @@ describe('insertCitation', function() {
 					assert.equal(
 						'&lt;foo <a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
 						marker_footnote_id +'-'+'1'+'" data-citation="test <strong>custom footnote</strong> data'+
-						i+'" data-inline-citation="'+'<foo [!a!]inside'+i+'[/!a!] bar>'+'" data-footnote-id="' + 
-						marker_footnote_id + '">'+'inside'+i+'</a> bar&gt;',
+						i+'" data-citation-modified="test <strong>custom footnote</strong> data'+
+						i+'" data-inline-citation="'+'<foo [!a!]&quot;inside'+i+'[/!a!] bar>'+'" data-footnote-id="' + 
+						marker_footnote_id + '">'+'"inside'+i+'</a> bar&gt;',
 						$this.html()
 						);
 				}
@@ -193,7 +194,7 @@ describe('insertCitation', function() {
 			'text is different to existing footnotes', function() {
 			//insert a new custom inline cited footnote
 			CKEDITOR.instances.doc.plugins.cite.insertCitation(
-				'test <strong>custom footnote</strong> data5', CKEDITOR.instances.doc, '<foo [!a!]inside5[/!a!] bar>');
+				'test <strong>custom footnote</strong> data5', CKEDITOR.instances.doc, '<foo [!a!]"inside5[/!a!] bar>');
 			//get the content
 			var $contents  = $(editor.editable().$);
 			
@@ -210,8 +211,9 @@ describe('insertCitation', function() {
 					assert.equal(
 						'&lt;foo <a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
 						marker_footnote_id +'-'+'1'+'" data-citation="test <strong>custom footnote</strong> data'+
-						i+'" data-inline-citation="'+'<foo [!a!]inside'+i+'[/!a!] bar>'+'" data-footnote-id="' + 
-						marker_footnote_id + '">'+'inside'+i+'</a> bar&gt;',
+						i+'" data-citation-modified="test <strong>custom footnote</strong> data'+
+						i+'" data-inline-citation="'+'<foo [!a!]&quot;inside'+i+'[/!a!] bar>'+'" data-footnote-id="' + 
+						marker_footnote_id + '">'+'"inside'+i+'</a> bar&gt;',
 						$this.html()
 						);
 				}
@@ -245,7 +247,7 @@ describe('insertCitation', function() {
 		it('should reference the same custom inline cited footnote when cited multiple times', function() {
 			//insert the same custom inline cited footnote
 			CKEDITOR.instances.doc.plugins.cite.insertCitation(
-				'test <strong>custom footnote</strong> data5', CKEDITOR.instances.doc, '<foo [!a!]inside5[/!a!] bar>');
+				'test <strong>custom footnote</strong> data5', CKEDITOR.instances.doc, '<foo [!a!]"inside5[/!a!] bar>');
 			//get the content
 			var $contents  = $(editor.editable().$);
 			
@@ -263,16 +265,18 @@ describe('insertCitation', function() {
 						assert.equal(
 							'&lt;foo <a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
 							marker_footnote_id +'-'+'1'+'" data-citation="test <strong>custom footnote</strong> data'+
-							i+'" data-inline-citation="'+'<foo [!a!]inside'+i+'[/!a!] bar>'+'" data-footnote-id="' + 
-							marker_footnote_id + '">'+'inside'+i+'</a> bar&gt;',
+							i+'" data-citation-modified="test <strong>custom footnote</strong> data'+
+							i+'" data-inline-citation="'+'<foo [!a!]&quot;inside'+i+'[/!a!] bar>'+'" data-footnote-id="' + 
+							marker_footnote_id + '">'+'"inside'+i+'</a> bar&gt;',
 							$this.html()
 							);
 					else
 						assert.equal(
 							'&lt;foo <a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
 							marker_footnote_id +'-'+'2'+'" data-citation="test <strong>custom footnote</strong> data'+
-							(i-1)+'" data-inline-citation="'+'<foo [!a!]inside'+(i-1)+'[/!a!] bar>'+'" data-footnote-id="' + 
-							marker_footnote_id + '">'+'inside'+(i-1)+'</a> bar&gt;',
+							(i-1)+'" data-citation-modified="test <strong>custom footnote</strong> data'+
+							(i-1)+'" data-inline-citation="'+'<foo [!a!]&quot;inside'+(i-1)+'[/!a!] bar>'+'" data-footnote-id="' + 
+							marker_footnote_id + '">'+'"inside'+(i-1)+'</a> bar&gt;',
 							$this.html()
 							);
 				}
@@ -310,7 +314,7 @@ describe('generateMarkerHtml', function() {
 		it('should return a numbered footnote wrapped in anchor', function() {
 			assert.equal(
 				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test citation" data-footnote-id="' + 'foo1' + '">[' + '2' + ']</a>',
+					'" data-citation="test citation" data-citation-modified="test citation" data-footnote-id="' + 'foo1' + '">[' + '2' + ']</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
 					1, 'test citation', 2, 3, 'foo1', null)
 				);
@@ -321,7 +325,7 @@ describe('generateMarkerHtml', function() {
 			'where no text after anchor close', function() {
 			assert.equal(
 				'foobar <a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test citation" data-inline-citation="foobar [!a!]inside anchor[/!a!]" data-footnote-id="' + 
+					'" data-citation="test citation" data-citation-modified="test citation" data-inline-citation="foobar [!a!]inside anchor[/!a!]" data-footnote-id="' + 
 					'foo1' + '">inside anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
 					1, 'test citation', 2, 3, 'foo1', 'foobar [!a!]inside anchor[/!a!]')
@@ -330,7 +334,7 @@ describe('generateMarkerHtml', function() {
 		it('should apply the anchor transformations [!a!] -> <a.. where no text before the anchor open but text after anchor close pattern', function() {
 			assert.equal(
 				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test citation" data-inline-citation="[!a!]inside anchor[/!a!] foobar" data-footnote-id="' + 
+					'" data-citation="test citation" data-citation-modified="test citation" data-inline-citation="[!a!]inside anchor[/!a!] foobar" data-footnote-id="' + 
 					'foo1' + '">inside anchor</a> foobar',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
 					1, 'test citation', 2, 3, 'foo1', '[!a!]inside anchor[/!a!] foobar')
@@ -339,7 +343,7 @@ describe('generateMarkerHtml', function() {
 		it('should apply the anchor transformations [!a!] -> <a.. where no text before or after the anchor patterns', function() {
 			assert.equal(
 				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test citation" data-inline-citation="[!a!]inside anchor[/!a!]" data-footnote-id="' + 
+					'" data-citation="test citation" data-citation-modified="test citation" data-inline-citation="[!a!]inside anchor[/!a!]" data-footnote-id="' + 
 					'foo1' + '">inside anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
 					1, 'test citation', 2, 3, 'foo1', '[!a!]inside anchor[/!a!]')
@@ -348,7 +352,7 @@ describe('generateMarkerHtml', function() {
 		it('should apply the anchor transformations automatically to the entire string if the anchor pattern doesnt exist', function() {
 			assert.equal(
 				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test citation" data-inline-citation="inside anchor" data-footnote-id="' + 
+					'" data-citation="test citation" data-citation-modified="test citation" data-inline-citation="inside anchor" data-footnote-id="' + 
 					'foo1' + '">inside anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
 					1, 'test citation', 2, 3, 'foo1', 'inside anchor')
@@ -357,7 +361,7 @@ describe('generateMarkerHtml', function() {
 		it('should handle citations with double quotes within the citation', function() {
 			assert.equal(
 				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test_ citation" data-inline-citation="inside_ anchor" data-footnote-id="' + 
+					'" data-citation="test&quot; citation" data-citation-modified="test&quot; citation" data-inline-citation="inside&quot; anchor" data-footnote-id="' + 
 					'foo1' + '">inside" anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
 					1, 'test" citation', 2, 3, 'foo1', 'inside" anchor')
@@ -366,14 +370,14 @@ describe('generateMarkerHtml', function() {
 		it('should handle citations with html special characters within the citation', function() {
 			assert.equal(
 				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test&gt; citation" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
+					'" data-citation="test&gt; citation" data-citation-modified="test&gt; citation" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
 					'foo1' + '">inside&lt; anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
 					1, 'test> citation', 2, 3, 'foo1', 'inside< anchor')
 				);
 			assert.equal(
 				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test &lt;strong&gt;citation&lt;/strong&gt;" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
+					'" data-citation="test &lt;strong&gt;citation&lt;/strong&gt;" data-citation-modified="test &lt;strong&gt;citation&lt;/strong&gt;" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
 					'foo1' + '">inside&lt; anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
 					1, 'test <strong>citation</strong>', 2, 3, 'foo1', 'inside< anchor')
