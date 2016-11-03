@@ -13,7 +13,21 @@
     <script src="ckeditor/ckeditor.js"></script>
 	<script src="ckeditor/samples/js/sample.js"></script>
     <link rel="stylesheet" href="ckeditor/samples/toolbarconfigurator/lib/codemirror/neo.css">
-    
+    <div>
+		<form class="insert-citation">
+			<div>
+				<label style="display: inline-block; width: 200px;">Inline Citation (optional): </label>
+				<input style="width:50%;" name="inline-citation" class="inline-citation" placeholder="(Johnston et al. [!a!]2009[/!a!])" value="(Johnston et al. [!a!]2009[/!a!])">
+			</div>
+			<div>
+				<label style="display: inline-block; width: 200px;">Citation: </label>
+				<input style="width:50%;" name="citation" class="citation" 
+					placeholder="Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg."
+					value="Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg.">
+			<div>
+			<input type="submit" value="Insert Citation at Cursor">
+		</form>
+	</div>
     <div id="ckeditor-container">
 		<textarea class="form-control" name="doc"></textarea>
 	</div>
@@ -25,6 +39,15 @@
 	<script>
 		CKEDITOR.on( 'instanceReady', function( evt ) {
 			mocha.run();
+		});
+		$(document).ready(function(){
+			$('form.insert-citation').on('submit', function(evt) {
+				evt.preventDefault();
+				CKEDITOR.instances.doc.plugins.cite.insertCitation(
+					$('input[name=citation]').val(), 
+					CKEDITOR.instances.doc, 
+					$('input[name=inline-citation]').val());
+			});
 		});
 	</script>
 
