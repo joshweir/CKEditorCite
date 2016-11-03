@@ -1,21 +1,13 @@
-﻿/**
- * The footnotes dialog definition.
- *
- * Version 1.0.9
- * https://github.com/andykirk/CKEditorFootnotes
- *
- */
-
 (function($) {
     "use strict";
 
     // Dialog definition.
-    CKEDITOR.dialog.add( 'footnotesDialog', function( editor ) {
+    CKEDITOR.dialog.add( 'citeDialog', function( editor ) {
 
         return {
             editor_name: false,
             // Basic properties of the dialog window: title, minimum size.
-            title: 'Manage Footnotes',
+            title: 'Manage Citations',
             minWidth: 400,
             minHeight: 200,
             footnotes_el: false,
@@ -34,7 +26,7 @@
                             type: 'textarea',
                             id: 'new_footnote',
                             'class': 'footnote_text',
-                            label: 'New footnote:',
+                            label: 'New citation:',
                             inputStyle: 'height: 100px',
                         },
                         {
@@ -42,7 +34,7 @@
                             type: 'text',
                             id: 'footnote_id',
                             name: 'footnote_id',
-                            label: 'No existing footnotes',
+                            label: 'No existing citations',
 
 
                             // Called by the main setupContent call on dialog initialization.
@@ -60,7 +52,7 @@
 
                                 if ($footnotes.length > 0) {
                                     if ($el.find('p').length == 0) {
-                                        $el.append('<p style="margin-bottom: 10px;"><strong>OR:</strong> Choose footnote:</p><ol class="footnotes_list"></ol>');
+                                        $el.append('<p style="margin-bottom: 10px;"><strong>OR:</strong> Choose citation:</p><ol class="footnotes_list"></ol>');
                                     } else {
                                         $el.find('ol').empty();
                                     }
@@ -126,7 +118,7 @@
                     config.height = 80;
                     config.resize_enabled = false;
                     config.autoGrow_minHeight = 80;
-                    config.removePlugins = 'footnotes';
+                    config.removePlugins = 'cite';
 
                     config.on = {
                         focus: function( evt ){
@@ -155,11 +147,11 @@
                         return;
                     } else {
                         // Insert new footnote:
-                        editor.plugins.footnotes.build(footnote_data, true, editor);
+                        editor.plugins.cite.build(footnote_data, true, editor);
                     }
                 } else {
                     // Insert existing footnote:
-                    editor.plugins.footnotes.build(footnote_id, false, editor);
+                    editor.plugins.cite.build(footnote_id, false, editor);
                 }
                 // Destroy the editor so it's rebuilt properly next time:
                 return;
