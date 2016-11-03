@@ -112,7 +112,7 @@ describe('insertCitation', function() {
 				assert.equal(
 					'<a href="#footnote-' + marker_footnote_id + '" id="footnote-marker-'+ 
 					marker_footnote_id +'-'+(i==3 ? 2 : 1)+'" data-citation="test <strong>footnote</strong> data'+(i==3 ? 2 : i)+'" data-footnote-id="' + 
-					marker_footnote_id + '">['+i+']</a>',
+					marker_footnote_id + '">['+(i==3 ? 2 : i)+']</a>',
 					$this.html()
 					);
 			});
