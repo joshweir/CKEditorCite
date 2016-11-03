@@ -316,7 +316,7 @@ describe('generateMarkerHtml', function() {
 				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
 					'" data-citation="test citation" data-citation-modified="test citation" data-footnote-id="' + 'foo1' + '">[' + '2' + ']</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test citation', 2, 3, 'foo1', null)
+					1, 'test citation', 'test citation', 2, 3, 'foo1', null)
 				);
 		});
 	});
@@ -328,7 +328,7 @@ describe('generateMarkerHtml', function() {
 					'" data-citation="test citation" data-citation-modified="test citation" data-inline-citation="foobar [!a!]inside anchor[/!a!]" data-footnote-id="' + 
 					'foo1' + '">inside anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test citation', 2, 3, 'foo1', 'foobar [!a!]inside anchor[/!a!]')
+					1, 'test citation', 'test citation', 2, 3, 'foo1', 'foobar [!a!]inside anchor[/!a!]')
 				);
 		});
 		it('should apply the anchor transformations [!a!] -> <a.. where no text before the anchor open but text after anchor close pattern', function() {
@@ -337,7 +337,7 @@ describe('generateMarkerHtml', function() {
 					'" data-citation="test citation" data-citation-modified="test citation" data-inline-citation="[!a!]inside anchor[/!a!] foobar" data-footnote-id="' + 
 					'foo1' + '">inside anchor</a> foobar',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test citation', 2, 3, 'foo1', '[!a!]inside anchor[/!a!] foobar')
+					1, 'test citation', 'test citation', 2, 3, 'foo1', '[!a!]inside anchor[/!a!] foobar')
 				);
 		});
 		it('should apply the anchor transformations [!a!] -> <a.. where no text before or after the anchor patterns', function() {
@@ -346,7 +346,7 @@ describe('generateMarkerHtml', function() {
 					'" data-citation="test citation" data-citation-modified="test citation" data-inline-citation="[!a!]inside anchor[/!a!]" data-footnote-id="' + 
 					'foo1' + '">inside anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test citation', 2, 3, 'foo1', '[!a!]inside anchor[/!a!]')
+					1, 'test citation', 'test citation', 2, 3, 'foo1', '[!a!]inside anchor[/!a!]')
 				);
 		});
 		it('should apply the anchor transformations automatically to the entire string if the anchor pattern doesnt exist', function() {
@@ -355,7 +355,7 @@ describe('generateMarkerHtml', function() {
 					'" data-citation="test citation" data-citation-modified="test citation" data-inline-citation="inside anchor" data-footnote-id="' + 
 					'foo1' + '">inside anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test citation', 2, 3, 'foo1', 'inside anchor')
+					1, 'test citation', 'test citation', 2, 3, 'foo1', 'inside anchor')
 				);
 		});
 		it('should handle citations with double quotes within the citation', function() {
@@ -364,7 +364,7 @@ describe('generateMarkerHtml', function() {
 					'" data-citation="test&quot; citation" data-citation-modified="test&quot; citation" data-inline-citation="inside&quot; anchor" data-footnote-id="' + 
 					'foo1' + '">inside" anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test" citation', 2, 3, 'foo1', 'inside" anchor')
+					1, 'test" citation', 'test" citation', 2, 3, 'foo1', 'inside" anchor')
 				);
 		});
 		it('should handle citations with html special characters within the citation', function() {
@@ -373,14 +373,14 @@ describe('generateMarkerHtml', function() {
 					'" data-citation="test&gt; citation" data-citation-modified="test&gt; citation" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
 					'foo1' + '">inside&lt; anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test> citation', 2, 3, 'foo1', 'inside< anchor')
+					1, 'test> citation', 'test> citation', 2, 3, 'foo1', 'inside< anchor')
 				);
 			assert.equal(
 				'<a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
 					'" data-citation="test &lt;strong&gt;citation&lt;/strong&gt;" data-citation-modified="test &lt;strong&gt;citation&lt;/strong&gt;" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
 					'foo1' + '">inside&lt; anchor</a>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test <strong>citation</strong>', 2, 3, 'foo1', 'inside< anchor')
+					1, 'test <strong>citation</strong>', 'test <strong>citation</strong>', 2, 3, 'foo1', 'inside< anchor')
 				);
 		});
 	});
