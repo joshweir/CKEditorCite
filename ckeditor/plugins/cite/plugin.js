@@ -27,7 +27,7 @@
 
         footnote_ids: [],
 		requires: 'widget',
-        //icons: 'footnotes',
+        icons: 'cite',
 		
         // The plugin initialization logic goes inside this method.
         init: function(editor) {
@@ -175,6 +175,29 @@
                     return element.name == 'sup' && element.attributes['data-footnote-id'] != 'undefined';
                 },
             });
+			
+			// Define an editor command that opens our dialog.
+            editor.addCommand('cite', new CKEDITOR.dialogCommand('citeDialog', {
+                // @TODO: This needs work:
+                allowedContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]',
+                requiredContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]'
+            }));
+
+            // Create a toolbar button that executes the above command.
+            editor.ui.addButton('Cite', {
+
+                // The text part of the button (if available) and tooptip.
+                label: 'Insert Citation',
+
+                // The command to execute on click.
+                command: 'cite',
+
+                // The button placement in the toolbar (toolbar group name).
+                toolbar: 'insert'
+            });
+
+            // Register our dialog file. this.path is the plugin folder path.
+            CKEDITOR.dialog.add('citeDialog', this.path + 'dialogs/cite.js');
         },
 
 		insertCitation: function(footnote, editor, inline_citation) {
@@ -385,8 +408,6 @@
 				$(this).html(marker);
             });
 
-			console.log(data);
-			
             // Prepare the footnotes_store object:
             editor.footnotes_store = {};
 			
