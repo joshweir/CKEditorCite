@@ -2,7 +2,27 @@
 // Register the plugin within the editor.
 (function($) {
     "use strict";
+	
+	var decodeEntities = (function() {
+	  // this prevents any overhead from creating the object each time
+	  var element = document.createElement('div');
 
+	  function decodeHTMLEntities (str) {
+		if(str && typeof str === 'string') {
+		  // strip script/html tags
+		  str = str.replace(/<script[^>]*>([\S\s]*?)<\/script>/gmi, '');
+		  str = str.replace(/<\/?\w(?:[^"'>]|"[^"]*"|'[^']*')*>/gmi, '');
+		  element.innerHTML = str;
+		  str = element.textContent;
+		  element.textContent = '';
+		}
+
+		return str;
+	  }
+
+	  return decodeHTMLEntities;
+	})();
+	
     CKEDITOR.plugins.add( 'cite', {
 
         footnote_ids: [],
@@ -23,7 +43,7 @@
             CKEDITOR.dtd.$editable['cite'] = 1;
 
             // Add some CSS tweaks:
-            var css = '.footnotes{background:#eee; padding:1px 15px;} .footnotes cite{font-style: normal;}';
+            var css = '.footnotes{background:#eee; padding:1px 15px;} .footnotes cite{font-style: normal;} .hidden{display: none;}';
             CKEDITOR.addCss(css);
 
             var $this = this;
@@ -35,6 +55,11 @@
             // Force a reorder on startup to make sure all vars are set: (e.g. footnotes store):
             editor.on('instanceReady', function(evt) {
                 $this.reorderMarkers(editor, 'startup');
+				//setup a hidden div to use for ckeditor auto html cleaning 
+				//of citatino texts if they dont confirm to html - ckeditor auto fixes
+				var $contents = $(editor.editable().$);
+				if (!$contents.find('.cite-cleaner').length)
+					$contents.prepend('<div class="cite-cleaner hidden"></div>');
             });
 
             // Add the reorder change event:
@@ -84,13 +109,18 @@
 				//their inline citations as they may have been changed 
 				//by the user
 				var $contents = $(editor.editable().$);
+				//get the current footnotes section header 
+				var $footnotes_header = $contents.find('.footnotes header h2').html();
 				$contents.find('.footnotes li cite').each(function(){
 					var $cite = $(this);
-					$contents.find('sup[data-footnote-id='+
-						$(this).parent('li').attr('data-footnote-id')
+					var footnote_id = $(this).parent('li').attr('data-footnote-id');
+					$contents.find('sup[data-footnote-id='+ footnote_id
 						+']').each(function(){
 						$(this).attr('data-citation-modified',
 							$cite.html());
+						if ($footnotes_header)
+							$(this).attr('data-footnotes-heading', 
+								$footnotes_header);
 					});
 				});
 			});
@@ -182,10 +212,17 @@
 		
 		findFootnote: function(footnote, editor) {
 			if (!editor.footnotes_store) return null;
+			//firstly insert the footnote into a hidden div in the ckeditor 
+			//so ckeditor can clean the string if it is not valid html 
+			//then retrieve it back as the footnote 
+			var $contents = $(editor.editable().$);
+			$contents.find('.cite-cleaner').html(footnote);
+			var cleaned_footnote = $contents.find('.cite-cleaner').html();
+			if (!cleaned_footnote) console.error('Couldnt find data in cite-cleaner');
 			var footnote_id = null;
 			for (var key in editor.footnotes_store) {
 				if (editor.footnotes_store.hasOwnProperty(key)) {
-					if (editor.footnotes_store[key] == footnote) {
+					if (editor.footnotes_store[key] == cleaned_footnote) {
 						footnote_id = key;
 						break;
 					}
@@ -229,7 +266,10 @@
 
             if ($footnotes.length == 0) {
 				var header_title = editor.config.footnotesTitle ? editor.config.footnotesTitle : 'Footnotes';
-                var header_els = ['<h2>', '</h2>'];//editor.config.editor.config.footnotesHeaderEls
+                var data_header_title = 
+					$contents.find('sup[data-footnotes-heading]').attr('data-footnotes-heading');
+				header_title = (data_header_title ? data_header_title : header_title);
+				var header_els = ['<h2>', '</h2>'];//editor.config.editor.config.footnotesHeaderEls
                 if (editor.config.footnotesHeaderEls) {
                     header_els = editor.config.footnotesHeaderEls;
                 }
@@ -304,6 +344,7 @@
 
             // Otherwise reorder the markers:
             var j = 0;
+			var footnotes_heading;
 			$markers.each(function(){
                 j++;
 				var footnote_id = $(this).attr('data-footnote-id')
@@ -311,8 +352,7 @@
 				  , inline_citation_text = $(this).attr('data-inline-citation')
 				  , marker_ref
                   , n = data.order.indexOf(footnote_id);
-
-                // If this is the markers first occurrence:
+				// If this is the markers first occurrence:
                 if (n == -1) {
                     // Store the id:
                     data.order.push(footnote_id);
@@ -435,8 +475,8 @@
 		  return $('<div/>').text(value).html();
 		},
 
-		htmlDecode: function (value){
-		  return $('<div/>').html(value).text();
+		htmlDecode: function (value) {
+			return decodeEntities(value);
 		}
     });
 }(window.jQuery));
