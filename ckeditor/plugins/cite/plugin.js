@@ -64,9 +64,6 @@
                     return;
                 }
 				
-				if(localStorage.getItem('reordering_markers') != d.getTime())
-					return;
-                
                 if(localStorage.getItem('reordering_markers') == d.getTime()) {
 					// SetTimeout seems to be necessary (it's used in the core but can't be 100% sure why)
 					setTimeout(function(){
@@ -75,6 +72,7 @@
 						0
 					);
 				}
+				//prevent an endless loop of reorderingMarkers on change
 				setTimeout(function() {
 					localStorage.removeItem('reordering_markers');
 				  }, 500);
@@ -90,11 +88,20 @@
                 }
             };
             var contents = $('<div>' + editor.element.$.textContent + '</div>')
-                     , l = contents.find('.footnotes li').length
-                     , i = 1;
-            for (i; i <= l; i++) {
-                def['footnote_' + i] = {selector: '#footnote' + prefix + '-' + i + ' cite', allowedContent: 'a[href]; cite[*](*); strong em span br'};
-            }
+                     , footnotes = contents.find('.footnotes li')
+					 , l = footnotes.length
+                     , i = 1
+					 , footnote_id;
+            contents.find('.footnotes li').each(function(){
+				footnote_id = $(this).attr('data-footnote-id');
+				def['footnote_' + i] = {selector: '#footnote' + prefix + '-' + footnote_id + ' cite', allowedContent: 'a[href]; cite[*](*); strong em span br i'};
+				i++;
+			});
+			//console.log(def);
+			//for (i; i <= l; i++) {
+			//	footnote_id = footnotes.attr('data-footnote-id');
+            //    def['footnote_' + i] = {selector: '#footnote' + prefix + '-' + i + ' cite', allowedContent: 'a[href]; cite[*](*); strong em span br i'};
+            //}
 
             // Register the footnotes widget.
             editor.widgets.add('footnotes', {
@@ -306,7 +313,7 @@
 					marker_ref = data.occurrences[footnote_id];
                 }
                 // Replace the marker contents:
-                var marker = self.generateMarkerHtml(prefix, citation_text, j, marker_ref, footnote_id, 
+                var marker = self.generateMarkerHtml(prefix, citation_text, n, marker_ref, footnote_id, 
 						inline_citation_text);
 				$(this).html(marker);
             });
@@ -355,10 +362,12 @@
             }
 			if (footnote_widget) {
 				// Then we `initEditable` each footnote, giving it a unique selector:
-				for (i in data.order) {
-					n = parseInt(i) + 1;
-					footnote_widget.initEditable('footnote_' + n, {selector: '#footnote' + prefix + '-' + n +' cite', allowedContent: 'a[href]; cite[*](*); em strong span'});
-				}
+				i = 1;
+				$contents.find('.footnotes li').each(function(){
+					footnote_id = $(this).attr('data-footnote-id');
+					footnote_widget.initEditable('footnote_' + i, {selector: '#footnote' + prefix + '-' + footnote_id +' cite', allowedContent: 'a[href]; cite[*](*); em strong span i'});
+					i++;
+				});
 			}
             editor.fire('unlockSnapshot');
         },
