@@ -41,7 +41,9 @@
 
             // Allow `cite` to be editable:
             CKEDITOR.dtd.$editable['cite'] = 1;
-
+			CKEDITOR.dtd.$editable['sup'] = 1;
+			CKEDITOR.dtd.$editable['span'] = 1;
+			
             // Add some CSS tweaks:
             var css = '.footnotes{background:#eee; padding:1px 15px;} .footnotes cite{font-style: normal;} .hidden{display: none;}';
             CKEDITOR.addCss(css);
@@ -134,6 +136,7 @@
                     allowedContent: 'strong em span sub sup;'
                 }
             };
+			var def2 = {};
             var contents = $('<div>' + editor.element.$.textContent + '</div>')
                      , footnotes = contents.find('.footnotes li')
 					 , l = footnotes.length
@@ -142,6 +145,12 @@
             contents.find('.footnotes li').each(function(){
 				footnote_id = $(this).attr('data-footnote-id');
 				def['footnote_' + i] = {selector: '#footnote' + prefix + '-' + footnote_id + ' cite', allowedContent: 'a[href]; cite[*](*); strong em span br i'};
+				i++;
+			});
+			i = 1;
+			contents.find('sup[data-footnote-id]').each(function(){
+				def2['marker_before_' + i] = {selector: 'span.inline-citation-before-link', allowedContent: 'strong em span i'};
+				def2['marker_after_' + i] = {selector: 'span.inline-citation-after-link', allowedContent: 'strong em span i'};
 				i++;
 			});
 			//console.log(def);
@@ -174,6 +183,8 @@
                 upcast: function(element) {
                     return element.name == 'sup' && element.attributes['data-footnote-id'] != 'undefined';
                 },
+				
+				editables: def2
             });
 			
 			// Define an editor command that opens our dialog.
@@ -461,6 +472,18 @@
 					i++;
 				});
 			}
+			for (i in editor.widgets.instances) {
+                if (editor.widgets.instances[i].name == 'footnotemarker') {
+                    editor.widgets.instances[i]
+						.initEditable('marker_before_' + i, 
+							{selector: 'span.inline-citation-before-link', 
+							 allowedContent: 'em strong span i'});
+					editor.widgets.instances[i]
+						.initEditable('marker_after_' + i, 
+							{selector: 'span.inline-citation-after-link', 
+							 allowedContent: 'em strong span i'});
+                }
+            }
             editor.fire('unlockSnapshot');
         },
         
@@ -471,12 +494,12 @@
 				//Clark et al. [!a!]2015[/!a!] foo
 				//if there are no anchors, assume anchor around the entire inline citation 
 				if (!inline_citation.match(/\[!a!\]/)) {
-					the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+					the_html = '<span class="inline-citation-before-link"></span><a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
 						'" data-citation="'+this.htmlEncode(citation_text).replace(/"/,'&quot;')+'"'+
 						' data-citation-modified="'+this.htmlEncode(citation_text_modified).replace(/"/,'&quot;')+'"' +
 						' data-inline-citation="'+
 						this.htmlEncode(inline_citation).replace(/"/,'&quot;')+'" data-footnote-id="' + 
-						footnote_id + '">' + this.htmlEncode(inline_citation) + '</a>';
+						footnote_id + '">' + this.htmlEncode(inline_citation) + '</a><span class="inline-citation-after-link"></span>';
 				}
 				//else, split by opening anchor 
 				//	in 1st part, keep that to join at the end 
@@ -486,12 +509,12 @@
 				else {
 					var parts = inline_citation.split(/\[!a!\]/);
 					var parts_2 = parts[1].split(/\[\/!a!\]/);
-					the_html = this.htmlEncode(parts[0]) + '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+					the_html = '<span class="inline-citation-before-link">'+this.htmlEncode(parts[0])+'</span>' + '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
 						'" data-citation="'+this.htmlEncode(citation_text).replace(/"/,'&quot;')+'"'+
 						' data-citation-modified="'+this.htmlEncode(citation_text_modified).replace(/"/,'&quot;')+'"' +
 						' data-inline-citation="'+this.htmlEncode(inline_citation).replace(/"/,'&quot;')+
 						'" data-footnote-id="' + footnote_id + '">' + this.htmlEncode(parts_2[0]) + '</a>' + 
-						this.htmlEncode((parts_2[1] ? parts_2[1] : ''));
+						'<span class="inline-citation-after-link">'+this.htmlEncode((parts_2[1] ? parts_2[1] : ''))+'</span>';
 				}
 			}
 			else {
