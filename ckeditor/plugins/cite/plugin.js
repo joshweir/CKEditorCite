@@ -63,7 +63,7 @@
 				if (!$contents.find('.cite-cleaner').length)
 					$contents.prepend('<div class="cite-cleaner hidden"></div>');
             });
-
+			
             // Add the reorder change event:
             editor.on('change', function(evt) {
                 var d = new Date();
@@ -182,9 +182,9 @@
                 // Check the elements that need to be converted to widgets.
                 upcast: function(element) {
                     return element.name == 'sup' && element.attributes['data-footnote-id'] != 'undefined';
-                },
+                }/*,
 				
-				editables: def2
+				editables: def2*/
             });
 			
 			// Define an editor command that opens our dialog.
@@ -472,6 +472,7 @@
 					i++;
 				});
 			}
+			/*
 			for (i in editor.widgets.instances) {
                 if (editor.widgets.instances[i].name == 'footnotemarker') {
                     editor.widgets.instances[i]
@@ -484,6 +485,7 @@
 							 allowedContent: 'em strong span i'});
                 }
             }
+            */
             editor.fire('unlockSnapshot');
         },
         

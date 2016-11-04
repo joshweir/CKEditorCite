@@ -159,13 +159,13 @@ describe('insertCitation', function() {
 					assert.equal(
 						$this.find('span.inline-citation-before-link').html(), 
 						'&lt;foo ');
-					assert.equal(
-						$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
+					//assert.equal(
+					//	$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
 					assert.equal(
 						$this.find('span.inline-citation-after-link').html(), 
 						' bar&gt;');
-					assert.equal(
-						$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
+					//assert.equal(
+					//	$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
 					assert.equal(
 						$this.find('a').attr('href'), 
 						'#footnote-' + marker_footnote_id);
@@ -234,13 +234,13 @@ describe('insertCitation', function() {
 					assert.equal(
 						$this.find('span.inline-citation-before-link').html(), 
 						'&lt;foo ');
-					assert.equal(
-						$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
+					//assert.equal(
+					//	$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
 					assert.equal(
 						$this.find('span.inline-citation-after-link').html(), 
 						' bar&gt;');
-					assert.equal(
-						$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
+					//assert.equal(
+					//	$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
 					assert.equal(
 						$this.find('a').attr('href'), 
 						'#footnote-' + marker_footnote_id);
@@ -321,13 +321,13 @@ describe('insertCitation', function() {
 						assert.equal(
 							$this.find('span.inline-citation-before-link').html(), 
 							'&lt;foo ');
-						assert.equal(
-							$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
+						//assert.equal(
+						//	$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
 						assert.equal(
 							$this.find('span.inline-citation-after-link').html(), 
 							' bar&gt;');
-						assert.equal(
-							$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
+						//assert.equal(
+						//	$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
 						assert.equal(
 							$this.find('a').attr('href'), 
 							'#footnote-' + marker_footnote_id);
@@ -364,13 +364,13 @@ describe('insertCitation', function() {
 						assert.equal(
 							$this.find('span.inline-citation-before-link').html(), 
 							'&lt;foo ');
-						assert.equal(
-							$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
+						//assert.equal(
+						//	$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
 						assert.equal(
 							$this.find('span.inline-citation-after-link').html(), 
 							' bar&gt;');
-						assert.equal(
-							$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
+						//assert.equal(
+						//	$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
 						assert.equal(
 							$this.find('a').attr('href'), 
 							'#footnote-' + marker_footnote_id);
@@ -435,12 +435,57 @@ describe('insertCitation', function() {
 
 
 describe('Rebuilding Footnotes on change', function() {
-	it('should store an invalid html reference as the "fixed" html (ckeditor can auto fix bad html when inserted)', function() {
+	it('should fix a reference inserted that has invalid html', function() {
+		//insert the same custom inline cited footnote with invalid html
+		CKEDITOR.instances.doc.plugins.cite.insertCitation(
+			'test <strong>custom & footnote</strong> data6', CKEDITOR.instances.doc, '<foo [!a!]"inside6[/!a!] bar>');
+		//get the content
+		var $contents  = $(editor.editable().$);
 		
+		var $sup = $contents.find('sup[data-footnote-id][data-citation="test <strong>custom &amp; footnote</strong> data6"]')
+		assert.equal($sup.attr('data-citation'), 'test <strong>custom &amp; footnote</strong> data6');
+		
+		var $footnote = $contents.find('.footnotes > ol > li[data-footnote-id="' + $sup.attr('data-footnote-id') + '"]')
+		assert.equal( $footnote.find('cite').html(), 
+					'test <strong>custom &amp; footnote</strong> data6');
 	});
 	it('should update inline citation "modified" citation text when the reference is updated by the user', function() {
 		//modify an auto numbered and a custom inline text citation, ensure these references are kept when footnotes
 		//are deleted below, this can test that modified references are rebuilt correctly in their modified state
+		setTimeout(function(){//wouldnt work without setTimeout with timeout of 0?
+			var $contents  = $(editor.editable().$);
+			var autonum_footnote_id, custom_footnote_id;
+			var i = 1;
+			$contents.find('.footnotes ol li').each(function(){
+				if (i == 1)
+					autonum_footnote_id = $(this).attr('id');
+				if (i==3)
+					custom_footnote_id = $(this).attr('id');
+				i++;
+			});
+
+			var range = editor.createRange();
+			
+			//set cursor to within a reference cite text to act as though editing and stop re-ordering the citation while editing
+			range.setStart( editor.document.find('.footnotes ol li[id='+autonum_footnote_id+'] cite').getItem(0), 0 ); 
+			range.setEnd( editor.document.find('.footnotes ol li[id='+autonum_footnote_id+'] cite').getItem(0), 0 ); 
+			editor.getSelection().selectRanges( [ range ] );
+			var modify = $contents.find('.footnotes > ol > li[id='+autonum_footnote_id+'] cite').html() + ' modified';
+			$contents.find('.footnotes > ol > li[id='+autonum_footnote_id+'] cite').html(modify);
+			modify = $contents.find('.footnotes > ol > li[id='+custom_footnote_id+'] cite').html() + ' modified';
+			$contents.find('.footnotes > ol > li[id='+custom_footnote_id+'] cite').html(modify);
+			//trigger a change to simulate the user changing these footnotes
+			editor.fire('change');
+			//set cursor back to the start of document
+			range.setStart( editor.document.find('p').getItem(0), 0 ); 
+			range.setEnd( editor.document.find('p').getItem(0), 0 ); 
+			editor.getSelection().selectRanges( [ range ] );
+			
+			assert.equal($contents.find('sup[data-footnote-id='+ autonum_footnote_id +']').attr('data-citation-modified'),
+				$contents.find('sup[data-footnote-id='+ autonum_footnote_id +']').attr('data-citation') + ' modified');
+			assert.equal($contents.find('sup[data-footnote-id='+ custom_footnote_id +']').attr('data-citation-modified'),
+				$contents.find('sup[data-footnote-id='+ custom_footnote_id +']').attr('data-citation') + ' modified');
+		}, 0);
 		
 	});
 	it('should update inline citation "footnotes title" when the footnotes title is updated by the user', function() {
@@ -463,7 +508,8 @@ describe('Rebuilding Footnotes on change', function() {
 		'rebuild footnotes and inline auto numbered footnotes not deleting the deleted footnote reference', function() {
 		
 	});
-	it('should, on inserting a new citation, rebuild footnotes including modified references and footnotes title', function() {
+	it('should, on inserting a new citation which is the same as another citation that was user modified, ' + 
+		'rebuild footnotes including modified references and footnotes title and wont duplicate the modified reference', function() {
 		
 	});
 });
