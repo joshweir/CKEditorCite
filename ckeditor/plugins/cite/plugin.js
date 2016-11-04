@@ -26,7 +26,7 @@
     CKEDITOR.plugins.add( 'cite', {
 
         footnote_ids: [],
-		requires: 'widget',
+		requires: 'widget,contextmenu',
         icons: 'cite',
 		
         // The plugin initialization logic goes inside this method.
