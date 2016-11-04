@@ -160,8 +160,12 @@ describe('insertCitation', function() {
 						$this.find('span.inline-citation-before-link').html(), 
 						'&lt;foo ');
 					assert.equal(
+						$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
+					assert.equal(
 						$this.find('span.inline-citation-after-link').html(), 
 						' bar&gt;');
+					assert.equal(
+						$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
 					assert.equal(
 						$this.find('a').attr('href'), 
 						'#footnote-' + marker_footnote_id);
@@ -231,8 +235,12 @@ describe('insertCitation', function() {
 						$this.find('span.inline-citation-before-link').html(), 
 						'&lt;foo ');
 					assert.equal(
+						$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
+					assert.equal(
 						$this.find('span.inline-citation-after-link').html(), 
 						' bar&gt;');
+					assert.equal(
+						$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
 					assert.equal(
 						$this.find('a').attr('href'), 
 						'#footnote-' + marker_footnote_id);
@@ -314,8 +322,12 @@ describe('insertCitation', function() {
 							$this.find('span.inline-citation-before-link').html(), 
 							'&lt;foo ');
 						assert.equal(
+							$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
+						assert.equal(
 							$this.find('span.inline-citation-after-link').html(), 
 							' bar&gt;');
+						assert.equal(
+							$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
 						assert.equal(
 							$this.find('a').attr('href'), 
 							'#footnote-' + marker_footnote_id);
@@ -353,8 +365,12 @@ describe('insertCitation', function() {
 							$this.find('span.inline-citation-before-link').html(), 
 							'&lt;foo ');
 						assert.equal(
+							$this.find('span.inline-citation-before-link').attr('contenteditable'), 'true');
+						assert.equal(
 							$this.find('span.inline-citation-after-link').html(), 
 							' bar&gt;');
+						assert.equal(
+							$this.find('span.inline-citation-after-link').attr('contenteditable'), 'true');
 						assert.equal(
 							$this.find('a').attr('href'), 
 							'#footnote-' + marker_footnote_id);
@@ -414,6 +430,41 @@ describe('insertCitation', function() {
 				}
 			});
 		});
+	});
+});
+
+
+describe('Rebuilding Footnotes on change', function() {
+	it('should store an invalid html reference as the "fixed" html (ckeditor can auto fix bad html when inserted)', function() {
+		
+	});
+	it('should update inline citation "modified" citation text when the reference is updated by the user', function() {
+		//modify an auto numbered and a custom inline text citation, ensure these references are kept when footnotes
+		//are deleted below, this can test that modified references are rebuilt correctly in their modified state
+		
+	});
+	it('should update inline citation "footnotes title" when the footnotes title is updated by the user', function() {
+		
+	});
+	it('should, on delete of auto numbered footnote, rebuild footnotes and inline auto numbered footnotes deleting the referenced footnote', function() {
+		
+	});
+	it('should, on delete of auto numbered footnote, rebuild footnotes rebuilding the footnotes header based on its user modified value', function() {
+		
+	});
+	it('should, on delete of auto numbered footnote that is a duplicate inline footnote, ' + 
+		'rebuild footnotes and inline auto numbered footnotes not deleting the deleted footnote reference', function() {
+		
+	});
+	it('should, on delete of custom inline citation footnote, rebuild footnotes and inline auto numbered footnotes deleting the referenced footnote', function() {
+		
+	});
+	it('should, on delete of custom inline citation footnote that is a duplicate inline footnote, ' + 
+		'rebuild footnotes and inline auto numbered footnotes not deleting the deleted footnote reference', function() {
+		
+	});
+	it('should, on inserting a new citation, rebuild footnotes including modified references and footnotes title', function() {
+		
 	});
 });
 
