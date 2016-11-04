@@ -452,44 +452,72 @@ describe('Rebuilding Footnotes on change', function() {
 	it('should update inline citation "modified" citation text when the reference is updated by the user', function() {
 		//modify an auto numbered and a custom inline text citation, ensure these references are kept when footnotes
 		//are deleted below, this can test that modified references are rebuilt correctly in their modified state
-		setTimeout(function(){//wouldnt work without setTimeout with timeout of 0?
-			var $contents  = $(editor.editable().$);
-			var autonum_footnote_id, custom_footnote_id;
-			var i = 1;
-			$contents.find('.footnotes ol li').each(function(){
-				if (i == 1)
-					autonum_footnote_id = $(this).attr('id');
-				if (i==3)
-					custom_footnote_id = $(this).attr('id');
-				i++;
-			});
+		var $contents  = $(editor.editable().$);
+		var autonum_footnote_id, custom_footnote_id;
+		var i = 1;
+		$contents.find('.footnotes ol li').each(function(){
+			if (i == 1)
+				autonum_footnote_id = $(this).attr('data-footnote-id');
+			if (i==3)
+				custom_footnote_id = $(this).attr('data-footnote-id');
+			i++;
+		});
 
-			var range = editor.createRange();
-			
-			//set cursor to within a reference cite text to act as though editing and stop re-ordering the citation while editing
-			range.setStart( editor.document.find('.footnotes ol li[id='+autonum_footnote_id+'] cite').getItem(0), 0 ); 
-			range.setEnd( editor.document.find('.footnotes ol li[id='+autonum_footnote_id+'] cite').getItem(0), 0 ); 
-			editor.getSelection().selectRanges( [ range ] );
-			var modify = $contents.find('.footnotes > ol > li[id='+autonum_footnote_id+'] cite').html() + ' modified';
-			$contents.find('.footnotes > ol > li[id='+autonum_footnote_id+'] cite').html(modify);
-			modify = $contents.find('.footnotes > ol > li[id='+custom_footnote_id+'] cite').html() + ' modified';
-			$contents.find('.footnotes > ol > li[id='+custom_footnote_id+'] cite').html(modify);
-			//trigger a change to simulate the user changing these footnotes
-			editor.fire('change');
-			//set cursor back to the start of document
-			range.setStart( editor.document.find('p').getItem(0), 0 ); 
-			range.setEnd( editor.document.find('p').getItem(0), 0 ); 
-			editor.getSelection().selectRanges( [ range ] );
-			
-			assert.equal($contents.find('sup[data-footnote-id='+ autonum_footnote_id +']').attr('data-citation-modified'),
-				$contents.find('sup[data-footnote-id='+ autonum_footnote_id +']').attr('data-citation') + ' modified');
-			assert.equal($contents.find('sup[data-footnote-id='+ custom_footnote_id +']').attr('data-citation-modified'),
-				$contents.find('sup[data-footnote-id='+ custom_footnote_id +']').attr('data-citation') + ' modified');
-		}, 0);
+		var range = editor.createRange();
 		
+		//set cursor to within a reference cite text to act as though editing and stop re-ordering the citation while editing
+		range.setStart( editor.document.find('.footnotes ol li[data-footnote-id="'+autonum_footnote_id+'"] cite').getItem(0), 0 ); 
+		range.setEnd( editor.document.find('.footnotes ol li[data-footnote-id="'+autonum_footnote_id+'"] cite').getItem(0), 0 ); 
+		editor.getSelection().selectRanges( [ range ] );
+		var modify = $contents.find('.footnotes > ol > li[data-footnote-id="'+autonum_footnote_id+'"] cite').html() + ' modified';
+		//console.log(modify);
+		$contents.find('.footnotes > ol > li[data-footnote-id="'+autonum_footnote_id+'"] cite').html(modify);
+		modify = $contents.find('.footnotes > ol > li[data-footnote-id="'+custom_footnote_id+'"] cite').html() + ' modified';
+		$contents.find('.footnotes > ol > li[data-footnote-id="'+custom_footnote_id+'"] cite').html(modify);
+		//trigger a change to simulate the user changing these footnotes
+		editor.fire('change');
+		//set cursor back to the start of document
+		range.setStart( editor.document.find('p').getItem(0), 0 ); 
+		range.setEnd( editor.document.find('p').getItem(0), 0 ); 
+		editor.getSelection().selectRanges( [ range ] );
+
+		assert.equal($contents.find('sup[data-footnote-id="'+ autonum_footnote_id +'"]').attr('data-citation-modified'),
+			$contents.find('sup[data-footnote-id="'+ autonum_footnote_id +'"]').attr('data-citation') + ' modified');
+		assert.equal($contents.find('sup[data-footnote-id="'+ custom_footnote_id +'"]').attr('data-citation-modified'),
+			$contents.find('sup[data-footnote-id="'+ custom_footnote_id +'"]').attr('data-citation') + ' modified');
 	});
 	it('should update inline citation "footnotes title" when the footnotes title is updated by the user', function() {
 		
+		var $contents  = $(editor.editable().$);
+		var autonum_footnote_id, custom_footnote_id;
+		var i = 1;
+		$contents.find('.footnotes ol li').each(function(){
+			if (i == 1)
+				autonum_footnote_id = $(this).attr('data-footnote-id');
+			if (i==3)
+				custom_footnote_id = $(this).attr('data-footnote-id');
+			i++;
+		});
+
+		var range = editor.createRange();
+		
+		//set cursor to within a reference cite text to act as though editing and stop re-ordering the citation while editing
+		range.setStart( editor.document.find('.footnotes header h2').getItem(0), 0 ); 
+		range.setEnd( editor.document.find('.footnotes header h2').getItem(0), 0 ); 
+		editor.getSelection().selectRanges( [ range ] );
+		var modify = $contents.find('.footnotes header h2').html() + ' & modified';
+		$contents.find('.footnotes header h2').html(modify);
+		//trigger a change to simulate the user changing these footnotes
+		editor.fire('change');
+		//set cursor back to the start of document
+		range.setStart( editor.document.find('p').getItem(0), 0 ); 
+		range.setEnd( editor.document.find('p').getItem(0), 0 ); 
+		editor.getSelection().selectRanges( [ range ] );
+		//console.log($contents.find('sup[data-footnote-id="'+ autonum_footnote_id +'"]').html());
+		assert.equal($contents.find('sup[data-footnote-id="'+ autonum_footnote_id +'"]').attr('data-footnotes-heading'),
+			'Footnotes &amp; modified');
+		assert.equal($contents.find('sup[data-footnote-id="'+ custom_footnote_id +'"]').attr('data-footnotes-heading'),
+			'Footnotes &amp; modified');
 	});
 	it('should, on delete of auto numbered footnote, rebuild footnotes and inline auto numbered footnotes deleting the referenced footnote', function() {
 		
