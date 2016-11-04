@@ -7,7 +7,7 @@
         return {
             editor_name: false,
             // Basic properties of the dialog window: title, minimum size.
-            title: 'Manage Citations',
+            title: 'Create Citation',
             minWidth: 400,
             minHeight: 200,
             footnotes_el: false,
