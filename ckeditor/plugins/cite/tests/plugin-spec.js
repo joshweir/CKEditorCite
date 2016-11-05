@@ -279,8 +279,6 @@ describe('insertCitation', function() {
 			//verify the footnote format as expected and footnote ids 
 			//match the marker footnote ids in order
 			i = 0;
-			//console.log(marker_footnote_ids);
-			//console.log($contents.find('.footnotes').html());
 			$contents.find('.footnotes > ol > li').each(function() {
 				i++;
 				var $this = $(this);
@@ -410,8 +408,6 @@ describe('insertCitation', function() {
 			//verify the footnote format as expected and footnote ids 
 			//match the marker footnote ids in order
 			i = 0;
-			//console.log(marker_footnote_ids);
-			//console.log($contents.find('.footnotes').html());
 			$contents.find('.footnotes > ol > li').each(function() {
 				i++;
 				var $this = $(this);
@@ -470,7 +466,6 @@ describe('Rebuilding Footnotes on change', function() {
 		range.setEnd( editor.document.find('.footnotes ol li[data-footnote-id="'+autonum_footnote_id+'"] cite').getItem(0), 0 ); 
 		editor.getSelection().selectRanges( [ range ] );
 		var modify = $contents.find('.footnotes > ol > li[data-footnote-id="'+autonum_footnote_id+'"] cite').html() + ' modified';
-		//console.log(modify);
 		$contents.find('.footnotes > ol > li[data-footnote-id="'+autonum_footnote_id+'"] cite').html(modify);
 		modify = $contents.find('.footnotes > ol > li[data-footnote-id="'+custom_footnote_id+'"] cite').html() + ' modified';
 		$contents.find('.footnotes > ol > li[data-footnote-id="'+custom_footnote_id+'"] cite').html(modify);
@@ -513,27 +508,174 @@ describe('Rebuilding Footnotes on change', function() {
 		range.setStart( editor.document.find('p').getItem(0), 0 ); 
 		range.setEnd( editor.document.find('p').getItem(0), 0 ); 
 		editor.getSelection().selectRanges( [ range ] );
-		//console.log($contents.find('sup[data-footnote-id="'+ autonum_footnote_id +'"]').html());
 		assert.equal($contents.find('sup[data-footnote-id="'+ autonum_footnote_id +'"]').attr('data-footnotes-heading'),
 			'Footnotes &amp; modified');
 		assert.equal($contents.find('sup[data-footnote-id="'+ custom_footnote_id +'"]').attr('data-footnotes-heading'),
 			'Footnotes &amp; modified');
 	});
-	it('should, on delete of auto numbered footnote, rebuild footnotes and inline auto numbered footnotes deleting the referenced footnote', function() {
+	it('should, on delete of auto numbered footnote, rebuild footnotes and inline auto numbered footnotes deleting the referenced footnote', function(done) {
+		CKEDITOR.instances.doc.plugins.cite.insertCitation(
+			'test first footnote', CKEDITOR.instances.doc);
+		var $contents  = $(editor.editable().$);
+		//get value of 1,2nd,3rd,4th footnote marker is [1],[2],[3],[3]
+		var i = 0;
+		var footnote_ids = [];
+		$contents.find('sup[data-footnote-id]').each(function(){
+			i++;
+			if (i > 4) return;
+			footnote_ids.push($(this).attr('data-footnote-id'));
+			assert.equal($(this).find('a').html(), '['+(i<4 ? i : i-1)+']');
+		});
+		//get value of 2nd,3rd reference 
+		i = 0;
+		var references = [];
+		$contents.find('.footnotes ol li').each(function(){
+			i++;
+			if (i == 1 || i > 3) return;
+			if (i == 2 || i == 3) {
+				assert.equal($(this).attr('data-footnote-id'), footnote_ids[i-1]);
+				references[i] = $(this).find('cite').html();
+			}
+		});
 		
-	});
-	it('should, on delete of auto numbered footnote, rebuild footnotes rebuilding the footnotes header based on its user modified value', function() {
+		//get value of footnotes heading 
+		var footnotes_heading = $contents.find('.footnotes header h2').html();
+		assert.equal(footnotes_heading, 'Footnotes &amp; modified');
 		
+		//delete the first footnote marker
+		$contents.find('sup[data-footnote-id]').first().remove();
+		setTimeout(function() {//wait for the reorder to happen
+			try {
+				//verify footnote markers now, 
+				//[1] -> referencing the 2nd reference above 
+				//[2],[2] -> referencing the 3rd reference above
+				i = 0;
+				$contents  = $(editor.editable().$);
+				$contents.find('.footnotes ol li').each(function(){
+					i++;
+					if (i > 2) return;
+					assert.equal($(this).attr('data-footnote-id'), footnote_ids[i]);
+					assert.equal($(this).find('cite').html(), references[i+1]);
+				});
+				i = 0;
+				$contents.find('sup[data-footnote-id]').each(function(){
+					i++;
+					if (i > 3) return;
+					assert.equal($(this).find('a').html(), '['+(i<3 ? i : i-1)+']');
+					assert.equal($(this).attr('data-footnote-id'), footnote_ids[i]);
+				});
+				assert.equal($contents.find('.footnotes header h2').html(), footnotes_heading);
+			}
+			catch (e) {
+				return done(e);
+			}
+			done();
+		}, 100)
 	});
 	it('should, on delete of auto numbered footnote that is a duplicate inline footnote, ' + 
-		'rebuild footnotes and inline auto numbered footnotes not deleting the deleted footnote reference', function() {
+		'rebuild footnotes and inline auto numbered footnotes not deleting the deleted footnote reference', function(done) {
+		var $contents  = $(editor.editable().$);
+		//get value of 1,2nd,3rd footnote marker is [1],[2],[2]
+		var i = 0;
+		var footnote_ids = [];
+		$contents.find('sup[data-footnote-id]').each(function(){
+			i++;
+			if (i > 3) return;
+			footnote_ids.push($(this).attr('data-footnote-id'));
+			assert.equal($(this).find('a').html(), '['+(i<3 ? i : i-1)+']');
+		});
+		//get value of 1st,2nd reference 
+		i = 0;
+		var references = [];
+		$contents.find('.footnotes ol li').each(function(){
+			i++;
+			if (i > 2) return;
+			assert.equal($(this).attr('data-footnote-id'), footnote_ids[i-1]);
+			references[i] = $(this).find('cite').html();
+		});
 		
+		//delete the first footnote marker
+		$contents.find('sup[data-footnote-id="'+footnote_ids[1]+'"]').first().remove();
+		editor.fire('change');
+		setTimeout(function() {//wait for the reorder to happen
+			try {
+				//verify footnote markers now, 
+				//[1] -> referencing the 1st reference above 
+				//[2] -> referencing the 2nd reference above
+				i = 0;
+				$contents  = $(editor.editable().$);
+				$contents.find('.footnotes ol li').each(function(){
+					i++;
+					if (i > 2) return;
+					assert.equal($(this).attr('data-footnote-id'), footnote_ids[i-1]);
+					assert.equal($(this).find('cite').html(), references[i]);
+				});
+				i = 0;
+				$contents.find('sup[data-footnote-id]').each(function(){
+					i++;
+					if (i > 2) return;
+					assert.equal($(this).find('a').html(), '['+i+']');
+					assert.equal($(this).attr('data-footnote-id'), footnote_ids[i-1]);
+				});
+			}
+			catch (e) {
+				return done(e);
+			}
+			done();
+		}, 100)
 	});
-	it('should, on delete of custom inline citation footnote, rebuild footnotes and inline auto numbered footnotes deleting the referenced footnote', function() {
-		
+	it('should, on delete of custom inline citation footnote, rebuild footnotes and inline auto numbered footnotes deleting the referenced footnote', function(done) {
+		var $contents  = $(editor.editable().$);
+		//get value of 3rd,4th,5th footnote marker is <foo "inside4 bar>,<foo "inside5 bar>,<foo "inside5 bar>
+		var i = 0;
+		var footnote_ids = [];
+		$contents.find('sup[data-footnote-id]').each(function(){
+			i++;
+			if (i > 5 || i < 3) return;
+			footnote_ids[i] = $(this).attr('data-footnote-id');
+			console.log($(this).text());
+			assert.equal($(this).text(), '<foo "inside'+(i==5 ? i : i+1)+' bar>');
+		});
+		//get value of 3rd,4th reference 
+		i = 0;
+		var references = [];
+		$contents.find('.footnotes ol li').each(function(){
+			i++;
+			if (i < 3 || i > 4) return;
+			assert.equal($(this).attr('data-footnote-id'), footnote_ids[i]);
+			references[i] = $(this).find('cite').html();
+		});
+
+		//delete the first footnote marker
+		$contents.find('sup[data-footnote-id="'+ footnote_ids[3] +'"]').first().remove();
+		setTimeout(function() {//wait for the reorder to happen
+			try {
+				//verify footnote markers now, 
+				//<foo "inside5 bar>,<foo "inside5 bar> -> referencing the 2nd reference above
+				i = 0;
+				$contents  = $(editor.editable().$);
+				$contents.find('.footnotes ol li').each(function(){
+					i++;
+					if (i < 3 || i > 3) return;
+					assert.equal($(this).attr('data-footnote-id'), footnote_ids[i]);
+					assert.equal($(this).find('cite').html(), references[i]);
+				});
+				i = 0;
+				$contents.find('sup[data-footnote-id]').each(function(){
+					i++;
+					if (i < 3 || i > 4) return;
+					assert.equal($(this).text(), '<foo "inside'+(i==4 ? i+1 : i+2)+' bar>');
+					assert.equal($(this).attr('data-footnote-id'), footnote_ids[i+1]);
+				});
+			}
+			catch (e) {
+				return done(e);
+			}
+			done();
+		}, 100)
 	});
 	it('should, on delete of custom inline citation footnote that is a duplicate inline footnote, ' + 
-		'rebuild footnotes and inline auto numbered footnotes not deleting the deleted footnote reference', function() {
+		'rebuild footnotes and inline auto numbered footnotes not deleting the deleted footnote reference', function(done) {
 		
 	});
 	it('should, on inserting a new citation which is the same as another citation that was user modified, ' + 

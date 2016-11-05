@@ -153,7 +153,6 @@
 				def2['marker_after_' + i] = {selector: 'span.inline-citation-after-link', allowedContent: 'strong em span i'};
 				i++;
 			});
-			//console.log(def);
 			//for (i; i <= l; i++) {
 			//	footnote_id = footnotes.attr('data-footnote-id');
             //    def['footnote_' + i] = {selector: '#footnote' + prefix + '-' + i + ' cite', allowedContent: 'a[href]; cite[*](*); strong em span br i'};
@@ -260,8 +259,6 @@
 			var footnote_id = null;
 			for (var key in editor.footnotes_store) {
 				if (editor.footnotes_store.hasOwnProperty(key)) {
-					//console.log('store: ' + editor.footnotes_store[key] +
-					//	' cleaned: ' + cleaned_footnote)
 					if (editor.footnotes_store[key] == cleaned_footnote) {
 						footnote_id = key;
 						break;
