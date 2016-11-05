@@ -544,6 +544,7 @@ describe('Rebuilding Footnotes on change', function() {
 		
 		//delete the first footnote marker
 		$contents.find('sup[data-footnote-id]').first().remove();
+		editor.fire('change');
 		setTimeout(function() {//wait for the reorder to happen
 			try {
 				//verify footnote markers now, 
@@ -633,7 +634,6 @@ describe('Rebuilding Footnotes on change', function() {
 			i++;
 			if (i > 5 || i < 3) return;
 			footnote_ids[i] = $(this).attr('data-footnote-id');
-			console.log($(this).text());
 			assert.equal($(this).text(), '<foo "inside'+(i==5 ? i : i+1)+' bar>');
 		});
 		//get value of 3rd,4th reference 
@@ -648,6 +648,7 @@ describe('Rebuilding Footnotes on change', function() {
 
 		//delete the first footnote marker
 		$contents.find('sup[data-footnote-id="'+ footnote_ids[3] +'"]').first().remove();
+		editor.fire('change');
 		setTimeout(function() {//wait for the reorder to happen
 			try {
 				//verify footnote markers now, 
@@ -657,8 +658,8 @@ describe('Rebuilding Footnotes on change', function() {
 				$contents.find('.footnotes ol li').each(function(){
 					i++;
 					if (i < 3 || i > 3) return;
-					assert.equal($(this).attr('data-footnote-id'), footnote_ids[i]);
-					assert.equal($(this).find('cite').html(), references[i]);
+					assert.equal($(this).attr('data-footnote-id'), footnote_ids[i+1]);
+					assert.equal($(this).find('cite').html(), references[i+1]);
 				});
 				i = 0;
 				$contents.find('sup[data-footnote-id]').each(function(){
@@ -676,7 +677,67 @@ describe('Rebuilding Footnotes on change', function() {
 	});
 	it('should, on delete of custom inline citation footnote that is a duplicate inline footnote, ' + 
 		'rebuild footnotes and inline auto numbered footnotes not deleting the deleted footnote reference', function(done) {
+		var $contents  = $(editor.editable().$);
+		//get value of 3rd,4th footnote marker is <foo "inside5 bar>
+		var i = 0;
+		var footnote_ids = [];
+		$contents.find('sup[data-footnote-id]').each(function(){
+			i++;
+			if (i < 3 || i > 4) return;
+			footnote_ids[i] = $(this).attr('data-footnote-id');
+			assert.equal($(this).text(), '<foo "inside5 bar>');
+		});
+		//get value of 3rd reference 
+		i = 0;
+		var references = [];
+		$contents.find('.footnotes ol li').each(function(){
+			i++;
+			if (i < 3 || i > 3) return;
+			assert.equal($(this).attr('data-footnote-id'), footnote_ids[i]);
+			references[i] = $(this).find('cite').html();
+		});
 		
+		//delete the first footnote marker
+		$contents.find('sup[data-footnote-id="'+footnote_ids[3]+'"]').first().remove();
+		editor.fire('change');
+		setTimeout(function() {//wait for the reorder to happen
+			try {
+				//verify footnote markers now, 
+				//<foo "inside5 bar> -> referencing the 3rd reference above 
+				//not <foo "inside6 bar> -> not referencing the 3rd reference above
+				i = 0;
+				$contents  = $(editor.editable().$);
+				$contents.find('.footnotes ol li').each(function(){
+					i++;
+					if (i < 3 || i > 4) return;
+					if (i == 3) {
+						assert.equal($(this).attr('data-footnote-id'), footnote_ids[i]);
+						assert.equal($(this).find('cite').html(), references[i]);
+					}
+					if (i == 4) {
+						assert.notEqual($(this).attr('data-footnote-id'), footnote_ids[i]);
+						assert.notEqual($(this).find('cite').html(), references[i]);
+					}
+				});
+				i = 0;
+				$contents.find('sup[data-footnote-id]').each(function(){
+					i++;
+					if (i < 3 || i > 4) return;
+					if (i == 3) {
+						assert.equal($(this).text(), '<foo "inside5 bar>');
+						assert.equal($(this).attr('data-footnote-id'), footnote_ids[i]);
+					}
+					if (i == 4) {
+						assert.notEqual($(this).text(), '<foo "inside5 bar>');
+						assert.notEqual($(this).attr('data-footnote-id'), footnote_ids[i]);
+					}
+				});
+			}
+			catch (e) {
+				return done(e);
+			}
+			done();
+		}, 100)
 	});
 	it('should, on inserting a new citation which is the same as another citation that was user modified, ' + 
 		'rebuild footnotes including modified references and footnotes title and wont duplicate the modified reference', function() {
