@@ -740,8 +740,63 @@ describe('Rebuilding Footnotes on change', function() {
 		}, 100)
 	});
 	it('should, on inserting a new citation which is the same as another citation that was user modified, ' + 
-		'rebuild footnotes including modified references and footnotes title and wont duplicate the modified reference', function() {
+		'rebuild footnotes including modified references and footnotes title and wont duplicate the modified reference', function(done) {
+		//place cursor at the beginning
+		var range = editor.createRange();
+		range.setStart( editor.document.find('p').getItem(0), 0 ); 
+		range.setEnd( editor.document.find('p').getItem(0), 0 ); 
+		editor.getSelection().selectRanges( [ range ] );
 		
+		//insert footnote
+		CKEDITOR.instances.doc.plugins.cite.insertCitation(
+			'Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In <i>Biological invasions in marine ecosystems</i> (pp. 133-151). Springer Berlin Heidelberg.', CKEDITOR.instances.doc);
+		editor.fire('change');
+		
+		//verify first 2 footnote markers reference the same first reference
+		setTimeout(function() {//wait for the reorder to happen
+			try {
+				range.setStart( editor.document.find('p').getItem(0), 0 ); 
+				range.setEnd( editor.document.find('p').getItem(0), 0 ); 
+				editor.getSelection().selectRanges( [ range ] );
+				
+				//insert same footnote again
+				CKEDITOR.instances.doc.plugins.cite.insertCitation(
+					'Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In <i>Biological invasions in marine ecosystems</i> (pp. 133-151). Springer Berlin Heidelberg.', CKEDITOR.instances.doc);
+				editor.fire('change');
+				
+				setTimeout(function() {//wait for the reorder to happen
+					try {
+						var $contents  = $(editor.editable().$);
+						var i = 0;
+						var footnote_ids = [];
+						$contents.find('sup[data-footnote-id]').each(function(){
+							i++;
+							if (i > 2) return;
+							footnote_ids[i] = $(this).attr('data-footnote-id');
+							assert.equal($(this).find('a').html(), '[1]');
+						});
+						assert.equal(footnote_ids[1],footnote_ids[2]);
+						
+						i = 0;
+						var references = [];
+						$contents.find('.footnotes ol li').each(function(){
+							i++;
+							if (i > 1) return;
+							assert.equal($(this).attr('data-footnote-id'), footnote_ids[1]);
+							assert($(this).find('cite').html(),
+								'Johnston, E. L., Piola, R. F., &amp; Clark, G. F. (2009). The role of propagule pressure in invasion success. In <i>Biological invasions in marine ecosystems</i> (pp. 133-151). Springer Berlin Heidelberg.');
+						});
+					}
+					catch (e) {
+						return done(e);
+					}
+					done();
+				},500);
+			}
+			catch (e) {
+				return done(e);
+			}
+		}, 500)
 	});
 });
 
