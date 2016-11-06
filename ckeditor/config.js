@@ -9,7 +9,8 @@ CKEDITOR.editorConfig = function( config ) {
 	// The configuration options below are needed when running CKEditor from source files.
 	config.plugins = 'dialogui,dialog,about,basicstyles,clipboard,button,toolbar,enterkey,entities,floatingspace,wysiwygarea,indent,indentlist,fakeobjects,link,list,undo,lineutils,widget,menu,contextmenu,floatpanel,panel,cite,devtools';
 	config.skin = 'moono';
-	config.allowedContent = true;
+	//config.allowedContent = true;
+	config.extraAllowedContent = 'div h1 h2 h3 sup cite section b i strong';
 	// %REMOVE_END%
 
 	// Define changes to default configuration here.

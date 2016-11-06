@@ -136,7 +136,7 @@
                         },
                         
                         change: function(evt) {
-							//alert($(this.editable().$).text());
+							//this needs to ensure to replace the div text each time, needs to show the html in safe way
 							$('<div>' + $(this.editable().$).text() + '</div>').insertAfter($('.footnote_text'));
 						}
                     };
