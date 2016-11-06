@@ -791,12 +791,12 @@ describe('Rebuilding Footnotes on change', function() {
 						return done(e);
 					}
 					done();
-				},500);
+				},100);
 			}
 			catch (e) {
 				return done(e);
 			}
-		}, 500)
+		}, 100)
 	});
 });
 

@@ -209,24 +209,15 @@
             // Register our dialog file. this.path is the plugin folder path.
             CKEDITOR.dialog.add('citeDialog', this.path + 'dialogs/cite.js');
             
-            /*
-            if (editor.contextMenu) {
-				editor.addMenuGroup('myGroup');
-				editor.addMenuItem('testtagItem', {
-					label: 'Edit Testtag',
-					icon: 'cite',
-					command: 'citeDialog',
-					group: 'myGroup'
-				});
-				
-				editor.contextMenu.addListener( function( element ) {
-					if ( element.getAscendant( 'sup', true ) ) {
-						return { testtagItem: CKEDITOR.TRISTATE_OFF };
-					}
-				});
-			}
-			*/
+            editor.on('doubleclick', function(ev) {
+				var selection = editor.getSelection();
+				var el = selection.getStartElement();
+				if (el.getName()=='span' && el.find('sup[data-footnote-id]'))
+					alert('editCiteCmd');
+			});
+            
 			CKEDITOR.on('instanceReady', function(ev) {
+				editor.addMenuGroup('cite');
 				editor.addCommand('editCiteCmd', {
 					exec : function( editor ) {
 						alert('editCiteCmd');
@@ -234,21 +225,10 @@
 				});
 				var editCiteCmd = {
 					command : 'editCiteCmd',
-					group : 'image'
+					group : 'cite'
 				};
 				editor.contextMenu.addListener(function(element, selection ) {
-					
 					//check element is sup[data-footnote-id]
-					console.log(element.getName());
-					
-					// Get elements parent, strong parent first
-					//var parents = element.getParents("strong");
-					// Check if it's strong
-					//if (parents[0].getName() != "strong")
-					//	return null; // No item
-					// Show item
-					//return { testitem: CKEDITOR.TRISTATE_ON };
-					
 					var ascendant = element.getAscendant( function( el ) {
 						try {
 							return el.getName()=='span' && el.find('sup[data-footnote-id]');
@@ -266,12 +246,15 @@
 				});
 				editor.addMenuItems({
 					editCiteCmd : {
-						label : 'Edit Image',
+						label : 'Edit In-text Citation',
 						command : 'editCiteCmd',
-						group : 'image',
+						group : 'cite',
 						order : 2
 					}
 				});
+				editor.removeMenuItem('paste');
+				editor.removeMenuItem('copy');
+				editor.removeMenuItem('cut');
 			});
         },
 
