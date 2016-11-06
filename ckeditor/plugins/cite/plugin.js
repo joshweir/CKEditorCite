@@ -188,7 +188,11 @@
 			
 			// Define an editor command that opens our dialog.
             editor.addCommand('cite', new CKEDITOR.dialogCommand('citeDialog', {
-                // @TODO: This needs work:
+                allowedContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]',
+                requiredContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]'
+            }));
+
+			editor.addCommand('intext_cite', new CKEDITOR.dialogCommand('intextCiteDialog', {
                 allowedContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]',
                 requiredContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]'
             }));
@@ -206,14 +210,29 @@
                 toolbar: 'insert'
             });
 
-            // Register our dialog file. this.path is the plugin folder path.
+            // Register dialogs
             CKEDITOR.dialog.add('citeDialog', this.path + 'dialogs/cite.js');
+            CKEDITOR.dialog.add('intextCiteDialog', this.path + 'dialogs/intext_cite.js');
             
             editor.on('doubleclick', function(ev) {
 				var selection = editor.getSelection();
 				var el = selection.getStartElement();
-				if (el.getName()=='span' && el.find('sup[data-footnote-id]'))
-					alert('editCiteCmd');
+				if (el.getName()=='span' && el.find('sup[data-footnote-id]')) {
+					editor.execCommand('intext_cite');
+				}
+			});
+			
+			editor.on( 'dialogShow', function( dialogShowEvent )
+			{
+				var selectorObj = dialogShowEvent.data._.contents.tabbasic.new_footnote;
+				console.log(dialogShowEvent.data._.contents);
+
+				// Watch for the "change" event to be fired for the element you 
+				// created a reference to (a select element in this case).
+				selectorObj.on( 'change', function( changeEvent )
+				{
+					alert("selectorObj Changed");
+				});
 			});
             
 			CKEDITOR.on('instanceReady', function(ev) {

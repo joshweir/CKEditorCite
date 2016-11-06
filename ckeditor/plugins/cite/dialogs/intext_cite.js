@@ -2,7 +2,7 @@
     "use strict";
 
     // Dialog definition.
-    CKEDITOR.dialog.add( 'citeDialog', function( editor ) {
+    CKEDITOR.dialog.add( 'intextCiteDialog', function( editor ) {
 
         return {
             editor_name: false,
@@ -16,7 +16,7 @@
             contents: [
                 {
                     // Definition of the Basic Settings dialog tab (page).
-                    id: 'tab-basic',
+                    id: 'tabbasic',
                     label: 'Basic Settings',
 
                     // The tab contents.
@@ -25,7 +25,15 @@
                             // Text input field for the footnotes text.
                             type: 'textarea',
                             id: 'new_footnote',
-                            'class': 'footnote_text',
+                            class: 'footnote_text',
+                            label: 'New citation:',
+                            inputStyle: 'height: 100px',
+                        },
+                        {
+                            // Text input field for the footnotes text.
+                            type: 'text',
+                            id: 'new_footnote_preview',
+                            className: 'footnote_text_preview',
                             label: 'New citation:',
                             inputStyle: 'height: 100px',
                         },
@@ -93,7 +101,7 @@
                 jQuery('.cke_dialog').css({'position': 'absolute', 'top': '2%'});
 
                 var current_editor_id = dialog.getParentEditor().id;
-
+				
                 CKEDITOR.replaceAll( function( textarea, config ) {
                     // Make sure the textarea has the correct class:
                     if (!textarea.className.match(/footnote_text/)) {
@@ -125,11 +133,15 @@
                             var $editor_el = $('#' + evt.editor.id + '_contents');
                             $editor_el.parents('tr').next().find(':checked').attr('checked', false);
                             $editor_el.parents('tr').next().find(':text').val('');
-                        }
+                        },
+                        
+                        change: function(evt) {
+							//alert($(this.editable().$).text());
+							$('<div>' + $(this.editable().$).text() + '</div>').insertAfter($('.footnote_text'));
+						}
                     };
                     return true;
                 });
-
             },
 
             // This method is invoked once a user clicks the OK button, confirming the dialog.
