@@ -208,6 +208,71 @@
 
             // Register our dialog file. this.path is the plugin folder path.
             CKEDITOR.dialog.add('citeDialog', this.path + 'dialogs/cite.js');
+            
+            /*
+            if (editor.contextMenu) {
+				editor.addMenuGroup('myGroup');
+				editor.addMenuItem('testtagItem', {
+					label: 'Edit Testtag',
+					icon: 'cite',
+					command: 'citeDialog',
+					group: 'myGroup'
+				});
+				
+				editor.contextMenu.addListener( function( element ) {
+					if ( element.getAscendant( 'sup', true ) ) {
+						return { testtagItem: CKEDITOR.TRISTATE_OFF };
+					}
+				});
+			}
+			*/
+			CKEDITOR.on('instanceReady', function(ev) {
+				editor.addCommand('editImgCmd', {
+					exec : function( editor ) {
+						alert('editImgCmd');
+					}
+				});
+				var editImgCmd = {
+					command : 'citeDialog',
+					group : 'cite'
+				};
+				editor.contextMenu.addListener(function(element, selection ) {
+					
+					//check element is sup[data-footnote-id]
+					console.log(element.getName());
+					
+					// Get elements parent, strong parent first
+					//var parents = element.getParents("strong");
+					// Check if it's strong
+					//if (parents[0].getName() != "strong")
+					//	return null; // No item
+					// Show item
+					//return { testitem: CKEDITOR.TRISTATE_ON };
+					
+					var ascendant = element.getAscendant( function( el ) {
+						try {
+							return el.getName()=='span' && el.find('sup[data-footnote-id]');
+						}
+						catch(e) {
+							return null;
+						}
+					}, true );
+					
+					if ( ascendant ) {
+						return {
+							editImgCmd : CKEDITOR.TRISTATE_ON
+						};
+					}
+				});
+				editor.addMenuItems({
+					editImgCmd : {
+						label : 'Edit Image',
+						command : 'editImgCmd',
+						group : 'image',
+						order : 2
+					}
+				});
+			});
         },
 
 		insertCitation: function(footnote, editor, inline_citation) {
