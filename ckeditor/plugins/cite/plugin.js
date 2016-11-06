@@ -227,14 +227,14 @@
 			}
 			*/
 			CKEDITOR.on('instanceReady', function(ev) {
-				editor.addCommand('editImgCmd', {
+				editor.addCommand('editCiteCmd', {
 					exec : function( editor ) {
-						alert('editImgCmd');
+						alert('editCiteCmd');
 					}
 				});
-				var editImgCmd = {
-					command : 'citeDialog',
-					group : 'cite'
+				var editCiteCmd = {
+					command : 'editCiteCmd',
+					group : 'image'
 				};
 				editor.contextMenu.addListener(function(element, selection ) {
 					
@@ -260,14 +260,14 @@
 					
 					if ( ascendant ) {
 						return {
-							editImgCmd : CKEDITOR.TRISTATE_ON
+							editCiteCmd : CKEDITOR.TRISTATE_ON
 						};
 					}
 				});
 				editor.addMenuItems({
-					editImgCmd : {
+					editCiteCmd : {
 						label : 'Edit Image',
-						command : 'editImgCmd',
+						command : 'editCiteCmd',
 						group : 'image',
 						order : 2
 					}
