@@ -36,6 +36,10 @@
 								/\[\/!a!\]/, 
 								"The In-Text Citation must contain the link anchor tags eg: Weinberg [!a!]1967[/!a!]." ),*/
                         },
+						{
+							type: 'html',
+							html: '<p style="color: grey; font-style: italic;">The In-Text Citation must contain the link anchor tags.<br /> eg: Weinberg [!a!]1967[/!a!] <br />[!a!] = The open of the link anchor<br />[/!a!] = The close of the link anchor</p>'
+						},
                         {
                             // Text input field for the footnotes title (explanation).
                             type: 'text',
