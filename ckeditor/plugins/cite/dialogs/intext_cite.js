@@ -64,7 +64,8 @@
 								//add preview block 
 								$el.children('div').css('display', 'none');
 								$el.append('<style>.validation-error{color: #B14644; padding: 0 0 10px;} .intext-citation-preview a{color: blue; text-decoration: underline; pointer-events: none; cursor: default;}</style><div style="padding: 10px 0 10px 10px; border: solid 1px #B6B6B6;" class="intext-citation-preview"></div>');
-								$('<div class="intext-citation-validation validation-error"></div>').insertBefore($el);
+								if (!$('.intext-citation-validation').length)
+									$('<div class="intext-citation-validation validation-error"></div>').insertBefore($el);
 							}
                         }
                     ]
