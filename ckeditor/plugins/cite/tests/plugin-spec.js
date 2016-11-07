@@ -798,6 +798,14 @@ describe('Rebuilding Footnotes on change', function() {
 			}
 		}, 100)
 	});
+	it('should, on changing an existing in-text citation text using the In-Text ' + 
+		'Citation dialog, after re-ordering (after adding another auto numbered ' + 
+		'footnote say) will maintain the same "user altered" custom in-text ' + 
+		'citation marker, while another marker referencing the same citation will ' + 
+		'remain in its previous state also', function(done) {
+		assert.equal(1,0);
+		done();
+	});
 });
 
 describe('generateMarkerHtml', function() {
@@ -877,3 +885,39 @@ describe('generateMarkerHtml', function() {
 	});
 });
 
+describe('InText Citation Dialog', function() {
+	it('should open the dialog on double click of a custom inline citation', function() {
+		//not sure how to automate this test?
+		assert.equal(0,1);
+	});
+	it('should not open the dialog on double click of an auto numbered inline citation', function() {
+		//not sure how to automate this test?
+		assert.equal(0,1);
+	});
+	it('should open the dialog on right click menu of a custom inline citation', function() {
+		//not sure how to automate this test?
+		assert.equal(0,1);
+	});
+	it('should not open the dialog on right click menu of an auto numbered inline citation', function() {
+		//not sure how to automate this test?
+		assert.equal(0,1);
+	});
+	it('should default the current in-text citation value and default the preview transforming anchor tags into link', function() {
+		assert.equal(0,1);
+	});
+	it('should preview the intext citation in real time, turning anchor into a link', function() {
+		assert.equal(0,1);
+	});
+	it('should validate that both opening and closing anchors ([!a!] and [/!a!]) exist and have text between them on ok', function() {
+		assert.equal(0,1);
+	});
+	it('should not update the intext citation text on cancel', function() {
+		assert.equal(0,1);
+	});
+	it('should clear the validation text, and re-init the intext citation based on current value on re-open of dialog after cancel', function() {
+		assert.equal(0,1);
+	});
+	it('should update the intext citation text on ok, for only that inline citation it wont change the inline citation text of any other intext citations referencing the same citation', function() {
+		assert.equal(0,1);
+	});
+});
