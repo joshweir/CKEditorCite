@@ -143,7 +143,7 @@
 				console.log(footnote_data);
 				if (!footnote_data.match(/\[!a!\]/) || 
 					!footnote_data.match(/\[\/!a!\]/)) {
-					$('.intext-citation-validation').text("The In-Text Citation must contain the link anchor tags eg: Weinberg [!a!]1967[/!a!].");
+					$('.intext-citation-validation').html("The In-Text Citation must contain the link anchor tags<br />eg: Weinberg [!a!]1967[/!a!].");
 					return false;
 				}
 				else $('.intext-citation-validation').text("");
