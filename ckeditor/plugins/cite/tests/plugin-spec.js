@@ -886,24 +886,45 @@ describe('generateMarkerHtml', function() {
 });
 
 describe('InText Citation Dialog', function() {
-	it('should open the dialog on double click of a custom inline citation', function() {
-		//not sure how to automate this test?
-		assert.equal(0,1);
-	});
-	it('should not open the dialog on double click of an auto numbered inline citation', function() {
-		//not sure how to automate this test?
-		assert.equal(0,1);
+	it('should open the dialog on double click of an inline citation', function() {
+		//todo: determine how to automate this test, cannot fire the doubleclick event:
+		//editor.fire('doubleclick');
 	});
 	it('should open the dialog on right click menu of a custom inline citation', function() {
-		//not sure how to automate this test?
-		assert.equal(0,1);
-	});
-	it('should not open the dialog on right click menu of an auto numbered inline citation', function() {
-		//not sure how to automate this test?
-		assert.equal(0,1);
+		//todo: determine how to automate this test
+		//dont know how to invoke the context menu
 	});
 	it('should default the current in-text citation value and default the preview transforming anchor tags into link', function() {
-		assert.equal(0,1);
+		//set cursor to within the 
+		var $contents  = $(editor.editable().$);
+		var nodes = editor.document.find('span.cke_widget_wrapper');
+		outer_loop:
+		for (var i=0; i<nodes.count(); i++) {
+			var childs = nodes.getItem(i).getChildren();
+			for (var j=0; j<childs.count(); j++) {
+				if (childs.getItem(j).$.localName == 'sup' && 
+					$(childs.getItem(j).$).attr('data-footnote-id'))
+					break outer_loop;
+			}
+		}
+		var range = editor.createRange();
+		range.setStart( editor.document.find('span.cke_widget_wrapper').getItem(i), 0 ); 
+		range.setEnd( editor.document.find('span.cke_widget_wrapper').getItem(i), 1 ); 
+		editor.getSelection().selectRanges( [ range ] );
+		//editor.fire('doubleclick')
+		console.log(i);
+		//editor.execCommand('intext_cite');
+		
+	});
+	it('should default the current auto numbered citation value and default the preview transforming anchor tags into link', function() {
+		//set cursor to within the 
+		/*
+		var range = editor.createRange();
+		range.setStart( editor.document.find('.footnotes ol li[data-footnote-id="'+autonum_footnote_id+'"] cite').getItem(0), 0 ); 
+		range.setEnd( editor.document.find('.footnotes ol li[data-footnote-id="'+autonum_footnote_id+'"] cite').getItem(0), 0 ); 
+		editor.getSelection().selectRanges( [ range ] );
+		editor.execCommand('intext_cite');
+		*/
 	});
 	it('should preview the intext citation in real time, turning anchor into a link', function() {
 		assert.equal(0,1);

@@ -75,7 +75,7 @@
             // Invoked when the dialog is loaded.
             onShow: function() {
                 this.setupContent();
-
+				var $this = this;
                 var dialog = this;
                 CKEDITOR.on( 'instanceLoaded', function( evt ) {
                     dialog.editor_name = evt.editor.name;
@@ -116,6 +116,10 @@
                     config.on = {
                         instanceReady: function(evt) {
 							$(this.editable().$).css('margin','10px');
+							//console.log($(editor.widgets.focused.element.$).attr('data-inline-citation'));
+							this.insertHtml($('<div/>').text($(editor.widgets.focused.element.$).attr('data-inline-citation')).html().replace(/"/,'&quot;'));
+							//$(this.editable().$).find('body').html($(editor.widgets.focused.element.$).attr('data-inline-citation'));
+							//console.log('focused widget:');
 						},
 						
 						focus: function( evt ){
@@ -126,7 +130,9 @@
                         
                         change: function(evt) {
 							//this needs to ensure to replace the div text each time, needs to show the html in safe way
-							$('.intext-citation-preview').html($(this.editable().$).text().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+							//$('.intext-citation-preview').html($(this.editable().$).text().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+							$('.intext-citation-preview').html($('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>').replace(/"/,'&quot;'));
+							//$('<div/>').text($(this.editable().$).text().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>')).html().replace(/"/,'&quot;')
 						}
                     };
                     return true;
@@ -140,7 +146,6 @@
                 //var footnote_id     = dialog.getValueOf('tabbasic', 'footnote_id');
                 var footnote_data   = footnote_editor.getData();
                 
-				console.log(footnote_data);
 				if (!footnote_data.match(/\[!a!\]/) || 
 					!footnote_data.match(/\[\/!a!\]/)) {
 					$('.intext-citation-validation').html("The In-Text Citation must contain the link anchor tags<br />eg: Weinberg [!a!]1967[/!a!].");

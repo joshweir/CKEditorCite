@@ -225,8 +225,7 @@
 			editor.on( 'dialogShow', function( dialogShowEvent )
 			{
 				var selectorObj = dialogShowEvent.data._.contents.tabbasic.new_footnote;
-				console.log(dialogShowEvent.data._.contents);
-
+				
 				// Watch for the "change" event to be fired for the element you 
 				// created a reference to (a select element in this case).
 				selectorObj.on( 'change', function( changeEvent )
@@ -266,7 +265,7 @@
 				editor.addMenuItems({
 					editCiteCmd : {
 						label : 'Edit In-text Citation',
-						command : 'editCiteCmd',
+						command : 'intext_cite',
 						group : 'cite',
 						order : 2
 					}
