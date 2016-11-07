@@ -7,7 +7,7 @@
         return {
             editor_name: false,
             // Basic properties of the dialog window: title, minimum size.
-            title: 'Create Citation',
+            title: 'Edit In-Text Citation',
             minWidth: 400,
             minHeight: 200,
             footnotes_el: false,
@@ -26,23 +26,22 @@
                             type: 'textarea',
                             id: 'new_footnote',
                             class: 'footnote_text',
-                            label: 'New citation:',
+                            label: 'In-Text Citation:',
                             inputStyle: 'height: 100px',
-                        },
-                        {
-                            // Text input field for the footnotes text.
-                            type: 'text',
-                            id: 'new_footnote_preview',
-                            className: 'footnote_text_preview',
-                            label: 'New citation:',
-                            inputStyle: 'height: 100px',
+							//validate: 
+							
+							/*CKEDITOR.dialog.validate.regex(
+								/\[!a!\]/, 
+								"The In-Text Citation must contain the link anchor tags eg: Weinberg [!a!]1967[/!a!]." )/* && CKEDITOR.dialog.validate.regex(
+								/\[\/!a!\]/, 
+								"The In-Text Citation must contain the link anchor tags eg: Weinberg [!a!]1967[/!a!]." ),*/
                         },
                         {
                             // Text input field for the footnotes title (explanation).
                             type: 'text',
-                            id: 'footnote_id',
-                            name: 'footnote_id',
-                            label: 'No existing citations',
+                            id: 'footnote_preview',
+                            name: 'footnote_preview',
+                            label: 'Preview:',
 
 
                             // Called by the main setupContent call on dialog initialization.
@@ -58,30 +57,11 @@
                                 $footnotes = $(editor.editable().$).find('.footnotes ol');
                                 $this = this;
 
-                                if ($footnotes.length > 0) {
-                                    if ($el.find('p').length == 0) {
-                                        $el.append('<p style="margin-bottom: 10px;"><strong>OR:</strong> Choose citation:</p><ol class="footnotes_list"></ol>');
-                                    } else {
-                                        $el.find('ol').empty();
-                                    }
-
-                                    var radios = '';
-                                    $footnotes.find('li').each(function(){
-                                        var $item = $(this);
-                                        var footnote_id = $item.attr('data-footnote-id');
-                                        radios += '<li style="margin-left: 15px;"><input type="radio" name="footnote_id" value="' + footnote_id + '" id="fn_' + footnote_id + '" /> <label for="fn_' + footnote_id + '" style="white-space: normal; display: inline-block; padding: 0 25px 0 5px; vertical-align: top; margin-bottom: 10px;">' + $item.find('cite').text() + '</label></li>';
-                                    });
-
-                                    $el.children('label,div').css('display', 'none');
-                                    $el.find('ol').html(radios);
-                                    $el.find(':radio').change(function(){;
-                                        $el.find(':text').val($(this).val());
-                                    });
-
-                                } else {
-                                    $el.children('div').css('display', 'none');
-                                }
-                            }
+								//add preview block 
+								$el.children('div').css('display', 'none');
+								$el.append('<style>.validation-error{color: #B14644; padding: 0 0 10px;} .intext-citation-preview a{color: blue; text-decoration: underline; pointer-events: none; cursor: default;}</style><div style="padding: 10px 0 10px 10px; border: solid 1px #B6B6B6;" class="intext-citation-preview"></div>');
+								$('<div class="intext-citation-validation validation-error"></div>').insertBefore($el);
+							}
                         }
                     ]
                 },
@@ -127,9 +107,13 @@
                     config.resize_enabled = false;
                     config.autoGrow_minHeight = 80;
                     config.removePlugins = 'cite';
-
+					
                     config.on = {
-                        focus: function( evt ){
+                        instanceReady: function(evt) {
+							$(this.editable().$).css('margin','10px');
+						},
+						
+						focus: function( evt ){
                             var $editor_el = $('#' + evt.editor.id + '_contents');
                             $editor_el.parents('tr').next().find(':checked').attr('checked', false);
                             $editor_el.parents('tr').next().find(':text').val('');
@@ -137,7 +121,7 @@
                         
                         change: function(evt) {
 							//this needs to ensure to replace the div text each time, needs to show the html in safe way
-							$('<div>' + $(this.editable().$).text() + '</div>').insertAfter($('.footnote_text'));
+							$('.intext-citation-preview').html($(this.editable().$).text().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
 						}
                     };
                     return true;
@@ -146,12 +130,21 @@
 
             // This method is invoked once a user clicks the OK button, confirming the dialog.
             onOk: function() {
-                var dialog = this;
+				var dialog = this;
                 var footnote_editor = CKEDITOR.instances[dialog.editor_name];
-                var footnote_id     = dialog.getValueOf('tab-basic', 'footnote_id');
+                //var footnote_id     = dialog.getValueOf('tabbasic', 'footnote_id');
                 var footnote_data   = footnote_editor.getData();
-                footnote_editor.destroy();
-
+                
+				console.log(footnote_data);
+				if (!footnote_data.match(/\[!a!\]/) || 
+					!footnote_data.match(/\[\/!a!\]/)) {
+					$('.intext-citation-validation').text("The In-Text Citation must contain the link anchor tags eg: Weinberg [!a!]1967[/!a!].");
+					return false;
+				}
+				else $('.intext-citation-validation').text("");
+				
+				footnote_editor.destroy();
+				
                 if (footnote_id == '') {
                     // No existing id selected, check for new footnote:
                     if (footnote_data == '') {
