@@ -81,6 +81,9 @@
                     dialog.editor_name = evt.editor.name;
                 } );
 
+				//clear any validation messages
+				$('.intext-citation-validation').html('');
+
                 // Allow page to scroll with dialog to allow for many/long footnotes
                 // (https://github.com/andykirk/CKEditorFootnotes/issues/12)
                 jQuery('.cke_dialog').css({'position': 'absolute', 'top': '2%'});
@@ -146,9 +149,8 @@
                 //var footnote_id     = dialog.getValueOf('tabbasic', 'footnote_id');
                 var footnote_data   = footnote_editor.getData();
                 
-				if (!footnote_data.match(/\[!a!\]/) || 
-					!footnote_data.match(/\[\/!a!\]/)) {
-					$('.intext-citation-validation').html("The In-Text Citation must contain the link anchor tags<br />eg: Weinberg [!a!]1967[/!a!].");
+				if (!footnote_data.match(/\[!a!\].+\[\/!a!\]/)) {
+					$('.intext-citation-validation').html("The In-Text Citation must contain the link anchor tags with text between them<br>eg: Weinberg [!a!]1967[/!a!].");
 					return false;
 				}
 				else $('.intext-citation-validation').text("");
