@@ -116,10 +116,13 @@
                     config.on = {
                         instanceReady: function(evt) {
 							$(this.editable().$).css('margin','10px');
-							//console.log($(editor.widgets.focused.element.$).attr('data-inline-citation'));
-							this.insertHtml($('<div/>').text($(editor.widgets.focused.element.$).attr('data-inline-citation')).html().replace(/"/,'&quot;'));
-							//$(this.editable().$).find('body').html($(editor.widgets.focused.element.$).attr('data-inline-citation'));
-							//console.log('focused widget:');
+							var intext_citation_text = $(editor.widgets.focused.element.$).attr('data-inline-citation');
+							if (!intext_citation_text) {
+								intext_citation_text = $(editor.widgets.focused.element.$).text();
+								intext_citation_text = '[!a!]' + intext_citation_text + '[/!a!]';
+							}
+							this.insertHtml(
+								$('<div/>').text(intext_citation_text).html());  //.replace(/"/,'&quot;'));
 						},
 						
 						focus: function( evt ){
@@ -129,10 +132,7 @@
                         },
                         
                         change: function(evt) {
-							//this needs to ensure to replace the div text each time, needs to show the html in safe way
-							//$('.intext-citation-preview').html($(this.editable().$).text().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
-							$('.intext-citation-preview').html($('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>').replace(/"/,'&quot;'));
-							//$('<div/>').text($(this.editable().$).text().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>')).html().replace(/"/,'&quot;')
+							$('.intext-citation-preview').html($('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));  //.replace(/"/,'&quot;'));
 						}
                     };
                     return true;
