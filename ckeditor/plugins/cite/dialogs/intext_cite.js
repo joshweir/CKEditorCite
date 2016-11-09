@@ -1,10 +1,14 @@
 (function($) {
     "use strict";
-
+	
     // Dialog definition.
     CKEDITOR.dialog.add( 'intextCiteDialog', function( editor ) {
-
-        return {
+		htmlEncode = function (value){
+		  //create a in-memory div, set it's inner text(which jQuery automatically encodes)
+		  //then grab the encoded contents back out.  The div never exists on the page.
+		  return $('<div/>').text(value).html();
+		};
+		return {
             editor_name: false,
             // Basic properties of the dialog window: title, minimum size.
             title: 'Edit In-Text Citation',
@@ -157,50 +161,25 @@
 				
 				footnote_editor.destroy();
 				
-				
 				//get chunk before, within and after link anchors
-				
+				var parts = footnote_data.split(/\[!a!\]/);
+				var parts_2 = parts[1].split(/\[\/!a!\]/);
+				/*
+				the_html = '<span class="inline-citation-before-link">'+htmlEncode(parts[0])+'</span>' + '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+					'" data-citation="'+htmlEncode(citation_text).replace(/"/,'&quot;')+'"'+
+					' data-citation-modified="'+htmlEncode(citation_text_modified).replace(/"/,'&quot;')+'"' +
+					' data-inline-citation="'+htmlEncode(inline_citation).replace(/"/,'&quot;')+
+					'" data-footnote-id="' + footnote_id + '">' + htmlEncode(parts_2[0]) + '</a>' + 
+					'<span class="inline-citation-after-link">'+htmlEncode((parts_2[1] ? parts_2[1] : ''))+'</span>';
+				*/
 				//replace the span before anchor, span after anchor, text within the anchor
+				$(editor.widgets.focused.element.$).find('.inline-citation-before-link').html(htmlEncode(parts[0]));
+				$(editor.widgets.focused.element.$).find('.inline-citation-after-link').html(htmlEncode((parts_2[1] ? parts_2[1] : '')));
+				$(editor.widgets.focused.element.$).find('a').html(htmlEncode(parts_2[0]));
 				
 				//replace the data-inline-citation attribute
+				$(editor.widgets.focused.element.$).attr('data-inline-citation',htmlEncode(footnote_data));
 				
-				
-				
-				prefix, citation_text, citation_text_modified, n, marker_ref, footnote_id, inline_citation
-				var thehtml = '';
-				//inline_citation will include an anchor placement so could be like this:
-				//Clark et al. [!a!]2015[/!a!] foo
-				//if there are no anchors, assume anchor around the entire inline citation 
-				if (!inline_citation.match(/\[!a!\]/)) {
-					the_html = '<span class="inline-citation-before-link"></span><a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
-						'" data-citation="'+this.htmlEncode(citation_text).replace(/"/,'&quot;')+'"'+
-						' data-citation-modified="'+this.htmlEncode(citation_text_modified).replace(/"/,'&quot;')+'"' +
-						' data-inline-citation="'+
-						this.htmlEncode(inline_citation).replace(/"/,'&quot;')+'" data-footnote-id="' + 
-						footnote_id + '">' + this.htmlEncode(inline_citation) + '</a><span class="inline-citation-after-link"></span>';
-				}
-				//else, split by opening anchor 
-				//	in 1st part, keep that to join at the end 
-				//	then in 2nd part, split by closing anchor,
-				//		then with 1st part, wrap this in the anchor
-				//		with 2nd part, keep this to join at the end. 
-				else {
-					var parts = inline_citation.split(/\[!a!\]/);
-					var parts_2 = parts[1].split(/\[\/!a!\]/);
-					the_html = '<span class="inline-citation-before-link">'+this.htmlEncode(parts[0])+'</span>' + '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
-						'" data-citation="'+this.htmlEncode(citation_text).replace(/"/,'&quot;')+'"'+
-						' data-citation-modified="'+this.htmlEncode(citation_text_modified).replace(/"/,'&quot;')+'"' +
-						' data-inline-citation="'+this.htmlEncode(inline_citation).replace(/"/,'&quot;')+
-						'" data-footnote-id="' + footnote_id + '">' + this.htmlEncode(parts_2[0]) + '</a>' + 
-						'<span class="inline-citation-after-link">'+this.htmlEncode((parts_2[1] ? parts_2[1] : ''))+'</span>';
-				}
-				
-				
-				
-				
-                $(editor.widgets.focused.element.$).attr('data-inline-citation',footnote_data);
-                $(editor.widgets.focused.element.$).text(footnote_data);
-                
                 return;
             },
 
