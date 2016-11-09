@@ -235,44 +235,46 @@
 			});
             
 			CKEDITOR.on('instanceReady', function(ev) {
-				editor.addMenuGroup('cite');
-				editor.addCommand('editCiteCmd', {
-					exec : function( editor ) {
-						alert('editCiteCmd');
-					}
-				});
-				var editCiteCmd = {
-					command : 'editCiteCmd',
-					group : 'cite'
-				};
-				editor.contextMenu.addListener(function(element, selection ) {
-					//check element is sup[data-footnote-id]
-					var ascendant = element.getAscendant( function( el ) {
-						try {
-							return el.getName()=='span' && el.find('sup[data-footnote-id]');
+				if (!editor._.menuItems.editCiteCmd) {
+					editor.addMenuGroup('cite');
+					editor.addCommand('editCiteCmd', {
+						exec : function( editor ) {
+							alert('editCiteCmd');
 						}
-						catch(e) {
-							return null;
+					});
+					var editCiteCmd = {
+						command : 'editCiteCmd',
+						group : 'cite'
+					};
+					editor.contextMenu.addListener(function(element, selection ) {
+						//check element is sup[data-footnote-id]
+						var ascendant = element.getAscendant( function( el ) {
+							try {
+								return el.getName()=='span' && el.find('sup[data-footnote-id]');
+							}
+							catch(e) {
+								return null;
+							}
+						}, true );
+						
+						if ( ascendant ) {
+							return {
+								editCiteCmd : CKEDITOR.TRISTATE_ON
+							};
 						}
-					}, true );
-					
-					if ( ascendant ) {
-						return {
-							editCiteCmd : CKEDITOR.TRISTATE_ON
-						};
-					}
-				});
-				editor.addMenuItems({
-					editCiteCmd : {
-						label : 'Edit In-text Citation',
-						command : 'intext_cite',
-						group : 'cite',
-						order : 2
-					}
-				});
-				editor.removeMenuItem('paste');
-				editor.removeMenuItem('copy');
-				editor.removeMenuItem('cut');
+					});
+					editor.addMenuItems({
+						editCiteCmd : {
+							label : 'Edit In-text Citation',
+							command : 'intext_cite',
+							group : 'cite',
+							order : 2
+						}
+					});
+					editor.removeMenuItem('paste');
+					editor.removeMenuItem('copy');
+					editor.removeMenuItem('cut');
+				}
 			});
         },
 
