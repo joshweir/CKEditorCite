@@ -1259,58 +1259,60 @@ describe('InText Citation Dialog', function() {
 		//insert some duplicates
 		CKEDITOR.instances.doc.plugins.cite.insertCitation(
 			'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '<foo [!a!]"inside7[/!a!] bar>');
-		CKEDITOR.instances.doc.plugins.cite.insertCitation(
-			'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '<foo [!a!]"inside7[/!a!] bar>');
-		
-		var intext_citation_found = false;
-		for(var key in editor.widgets.instances) {
-			if (intext_citation_found) 
-				break;
-			if (CKEDITOR.dialog.getCurrent()) //for some reason this test runs twice, so just check dialog isnt already active
-				break;
-			if(editor.widgets.instances.hasOwnProperty(key)){
-				if (editor.widgets.instances[key].name == 'footnotemarker' &&
-					$(editor.widgets.instances[key].element.$).attr("data-inline-citation") == '<foo [!a!]"inside5[/!a!] bar>') {
-					var widget_key = key;
-					intext_citation_found = true;
-					var intext_citation_text = $(editor.widgets.instances[key].element.$).attr("data-inline-citation");
-					editor.widgets.instances[key].focus(); 
-					editor.execCommand('intext_cite');
-					setTimeout(function() {
-						try {
-							var editor_found = false;
-							Object.keys(CKEDITOR.instances).forEach(function (key2) {
-								if (CKEDITOR.instances[key2].element.$.className.match(/footnote_text/)) {
-									editor_found = true;
-									var $contents  = $(CKEDITOR.instances[key2].editable().$);
-									assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
-									assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
-									var new_value = 'test< change [!a!]li&nk[/!a!] after >link';
-									CKEDITOR.instances[key2].setData(new_value);
-									CKEDITOR.instances[key2].fire('change');
-									CKEDITOR.dialog.getCurrent()._.buttons['ok'].click();
-									setTimeout(function() {
-										try {
-											//var $contents  = $(CKEDITOR.instances[key2].editable().$);
-											assert.equal($(editor.widgets.instances[widget_key].element.$).attr("data-inline-citation"), intext_citation_text);
-											//CKEDITOR.instances[key2].destroy();
-											//CKEDITOR.dialog.getCurrent().hide();
-											done();
-										} catch(e) {
-											return done(e);
-										}
-									},300);
-								}
-							});
-							if (!editor_found) 
-								throw('couldnt find dialog ckeditor instance!');
-						} catch(e) {
-							return done(e);
-						}
-					},500);
+		setTimeout(function(){
+			CKEDITOR.instances.doc.plugins.cite.insertCitation(
+				'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '<foo [!a!]"inside7[/!a!] bar>');
+			
+			var intext_citation_found = false;
+			for(var key in editor.widgets.instances) {
+				if (intext_citation_found) 
+					break;
+				if (CKEDITOR.dialog.getCurrent()) //for some reason this test runs twice, so just check dialog isnt already active
+					break;
+				if(editor.widgets.instances.hasOwnProperty(key)){
+					if (editor.widgets.instances[key].name == 'footnotemarker' &&
+						$(editor.widgets.instances[key].element.$).attr("data-inline-citation") == '<foo [!a!]"inside5[/!a!] bar>') {
+						var widget_key = key;
+						intext_citation_found = true;
+						var intext_citation_text = $(editor.widgets.instances[key].element.$).attr("data-inline-citation");
+						editor.widgets.instances[key].focus(); 
+						editor.execCommand('intext_cite');
+						setTimeout(function() {
+							try {
+								var editor_found = false;
+								Object.keys(CKEDITOR.instances).forEach(function (key2) {
+									if (CKEDITOR.instances[key2].element.$.className.match(/footnote_text/)) {
+										editor_found = true;
+										var $contents  = $(CKEDITOR.instances[key2].editable().$);
+										assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
+										assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+										var new_value = 'test< change [!a!]li&nk[/!a!] after >link';
+										CKEDITOR.instances[key2].setData(new_value);
+										CKEDITOR.instances[key2].fire('change');
+										CKEDITOR.dialog.getCurrent()._.buttons['ok'].click();
+										setTimeout(function() {
+											try {
+												//var $contents  = $(CKEDITOR.instances[key2].editable().$);
+												assert.equal($(editor.widgets.instances[widget_key].element.$).attr("data-inline-citation"), intext_citation_text);
+												//CKEDITOR.instances[key2].destroy();
+												//CKEDITOR.dialog.getCurrent().hide();
+												done();
+											} catch(e) {
+												return done(e);
+											}
+										},300);
+									}
+								});
+								if (!editor_found) 
+									throw('couldnt find dialog ckeditor instance!');
+							} catch(e) {
+								return done(e);
+							}
+						},500);
+					}
 				}
 			}
-		}
+		},200);
 	});
 	it('should default the current auto numbered citation value and default the preview transforming anchor tags into link', function() {
 		
