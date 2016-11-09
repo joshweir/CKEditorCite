@@ -1258,9 +1258,9 @@ describe('InText Citation Dialog', function() {
 	it('should update the intext citation text on ok, for only that inline citation it wont change the inline citation text of any other intext citations referencing the same citation', function(done) {
 		//insert some duplicates
 		CKEDITOR.instances.doc.plugins.cite.insertCitation(
-			'test <strong>custom footnote</strong> data5', CKEDITOR.instances.doc, '<foo [!a!]"inside5[/!a!] bar>');
+			'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '<foo [!a!]"inside7[/!a!] bar>');
 		CKEDITOR.instances.doc.plugins.cite.insertCitation(
-			'test <strong>custom footnote</strong> data5', CKEDITOR.instances.doc, '<foo [!a!]"inside5[/!a!] bar>');
+			'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '<foo [!a!]"inside7[/!a!] bar>');
 		
 		var intext_citation_found = false;
 		for(var key in editor.widgets.instances) {
@@ -1285,7 +1285,7 @@ describe('InText Citation Dialog', function() {
 									var $contents  = $(CKEDITOR.instances[key2].editable().$);
 									assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
 									assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
-									var new_value = 'test change [!a!]link[/!a!] after link';
+									var new_value = 'test< change [!a!]li&nk[/!a!] after >link';
 									CKEDITOR.instances[key2].setData(new_value);
 									CKEDITOR.instances[key2].fire('change');
 									CKEDITOR.dialog.getCurrent()._.buttons['ok'].click();
