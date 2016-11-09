@@ -307,12 +307,28 @@
 				(inline_citation ? ' data-inline-citation="'+this.htmlEncode(inline_citation).replace(/"/,'&quot;')+'"' : '')
 				+'>X</sup>';
 			editor.insertHtml(footnote_marker);
+			$('<span class="dummyF">&nbsp;</span>').insertAfter($contents.find('sup[data-footnote-id]:contains(X)').parent('span'));
+			
 			if (is_new) {
                 editor.fire('lockSnapshot');
                 this.addFootnote(this.buildFootnote(footnote_id, footnote, false, editor, inline_citation), editor);
                 editor.fire('unlockSnapshot');
             }
             this.reorderMarkers(editor,'build');
+            
+            var sel = editor.getSelection(); 
+			var range = editor.createRange();
+			range.setStart( editor.document.find('span.dummyF').getItem(0), 0 ); 
+			range.setEnd( editor.document.find('span.dummyF').getItem(0), 0 ); 
+			//editor.getSelection().selectRanges( [ range ] );
+			
+			//var range = editor.createRange();
+			editor.getSelection().selectRanges( [ range ] );
+			
+			$contents.find('span.dummyF').each(function(){
+				$(this).remove();
+			});
+			editor.focus();
         },
 		
 		findFootnote: function(footnote, editor) {

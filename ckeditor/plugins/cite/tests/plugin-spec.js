@@ -1045,7 +1045,7 @@ describe('InText Citation Dialog', function() {
 										} catch(e) {
 											return done(e);
 										}
-									},300);
+									},500);
 								}
 							});
 							if (!editor_found) 
@@ -1091,7 +1091,7 @@ describe('InText Citation Dialog', function() {
 										} catch(e) {
 											return done(e);
 										}
-									},300);
+									},500);
 								}
 							});
 							if (!editor_found) 
@@ -1141,7 +1141,7 @@ describe('InText Citation Dialog', function() {
 										} catch(e) {
 											return done(e);
 										}
-									},300);
+									},500);
 								}
 							});
 							if (!editor_found) 
@@ -1191,7 +1191,7 @@ describe('InText Citation Dialog', function() {
 										} catch(e) {
 											return done(e);
 										}
-									},300);
+									},500);
 								}
 							});
 							if (!editor_found) 
@@ -1242,7 +1242,7 @@ describe('InText Citation Dialog', function() {
 										} catch(e) {
 											return done(e);
 										}
-									},300);
+									},500);
 								}
 							});
 							if (!editor_found) 
@@ -1262,7 +1262,6 @@ describe('InText Citation Dialog', function() {
 		setTimeout(function(){
 			CKEDITOR.instances.doc.plugins.cite.insertCitation(
 				'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '<foo [!a!]"inside7[/!a!] bar>');
-			
 			var intext_citation_found = false;
 			for(var key in editor.widgets.instances) {
 				if (intext_citation_found) 
@@ -1293,14 +1292,14 @@ describe('InText Citation Dialog', function() {
 										setTimeout(function() {
 											try {
 												//var $contents  = $(CKEDITOR.instances[key2].editable().$);
-												assert.equal($(editor.widgets.instances[widget_key].element.$).attr("data-inline-citation"), intext_citation_text);
+												assert.equal($(editor.widgets.instances[widget_key].element.$).attr("data-inline-citation"), new_value);
 												//CKEDITOR.instances[key2].destroy();
 												//CKEDITOR.dialog.getCurrent().hide();
 												done();
 											} catch(e) {
 												return done(e);
 											}
-										},300);
+										},500);
 									}
 								});
 								if (!editor_found) 

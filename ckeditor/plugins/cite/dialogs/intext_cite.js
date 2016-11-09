@@ -151,14 +151,13 @@
 				var dialog = this;
                 var footnote_editor = CKEDITOR.instances[dialog.editor_name];
                 //var footnote_id     = dialog.getValueOf('tabbasic', 'footnote_id');
-                var footnote_data   = footnote_editor.getData();
+                var footnote_data   = $(CKEDITOR.instances[dialog.editor_name].editable().$).text();
                 
 				if (!footnote_data.match(/\[!a!\].+\[\/!a!\]/)) {
 					$('.intext-citation-validation').html("The In-Text Citation must contain the link anchor tags with text between them<br>eg: Weinberg [!a!]1967[/!a!].");
 					return false;
 				}
 				else $('.intext-citation-validation').text("");
-				
 				footnote_editor.destroy();
 				
 				//get chunk before, within and after link anchors
@@ -173,7 +172,7 @@
 					'<span class="inline-citation-after-link">'+htmlEncode((parts_2[1] ? parts_2[1] : ''))+'</span>';
 				*/
 				//replace the span before anchor, span after anchor, text within the anchor
-				console.log(parts[0]);
+				
 				$(editor.widgets.focused.element.$).find('.inline-citation-before-link').html(parts[0]);
 				$(editor.widgets.focused.element.$).find('.inline-citation-after-link').html((parts_2[1] ? parts_2[1] : ''));
 				$(editor.widgets.focused.element.$).find('a').html(parts_2[0]);
