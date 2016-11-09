@@ -173,12 +173,13 @@
 					'<span class="inline-citation-after-link">'+htmlEncode((parts_2[1] ? parts_2[1] : ''))+'</span>';
 				*/
 				//replace the span before anchor, span after anchor, text within the anchor
-				$(editor.widgets.focused.element.$).find('.inline-citation-before-link').html(htmlEncode(parts[0]));
-				$(editor.widgets.focused.element.$).find('.inline-citation-after-link').html(htmlEncode((parts_2[1] ? parts_2[1] : '')));
-				$(editor.widgets.focused.element.$).find('a').html(htmlEncode(parts_2[0]));
+				console.log(parts[0]);
+				$(editor.widgets.focused.element.$).find('.inline-citation-before-link').html(parts[0]);
+				$(editor.widgets.focused.element.$).find('.inline-citation-after-link').html((parts_2[1] ? parts_2[1] : ''));
+				$(editor.widgets.focused.element.$).find('a').html(parts_2[0]);
 				
 				//replace the data-inline-citation attribute
-				$(editor.widgets.focused.element.$).attr('data-inline-citation',htmlEncode(footnote_data));
+				$(editor.widgets.focused.element.$).attr('data-inline-citation',footnote_data);
 				
                 return;
             },
