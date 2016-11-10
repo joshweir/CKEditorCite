@@ -7,7 +7,7 @@
         return {
             editor_name: false,
             // Basic properties of the dialog window: title, minimum size.
-            title: 'Create Citation',
+            title: 'Insert Citation',
             minWidth: 400,
             minHeight: 200,
             footnotes_el: false,
@@ -16,7 +16,7 @@
             contents: [
                 {
                     // Definition of the Basic Settings dialog tab (page).
-                    id: 'tab-basic',
+                    id: 'tabbasic',
                     label: 'Basic Settings',
 
                     // The tab contents.
@@ -25,55 +25,46 @@
                             // Text input field for the footnotes text.
                             type: 'textarea',
                             id: 'new_footnote',
-                            'class': 'footnote_text',
-                            label: 'New citation:',
+                            'class': 'citation_footnote_text',
+                            label: 'New Citation:',
                             inputStyle: 'height: 100px',
                         },
+						{
+							type: 'html',
+							html: '<p style="color: grey; font-style: italic;">eg: Laemmli, U. K. (1970). Cleavage of Structural Proteins<br>during the Assembly of the Head of Bacteriophage T4. Nature, 227(5259), 680-685.</p>'
+						},
+						{
+                            // Text input field for the footnotes text.
+                            type: 'textarea',
+                            id: 'new_intext_marker',
+                            'class': 'intext_footnote_text',
+                            label: 'In-text Citation Marker:',
+                            inputStyle: 'height: 100px',
+                        },
+						{
+							type: 'html',
+							html: '<p style="color: grey; font-style: italic;">The In-Text Citation must contain the link anchor tags.<br /> eg: Laemmli [!a!]1970[/!a!] <br />[!a!] = The open of the link anchor<br />[/!a!] = The close of the link anchor<br>Leave blank for auto-numbered citation marker.</p>'
+						},
                         {
                             // Text input field for the footnotes title (explanation).
                             type: 'text',
-                            id: 'footnote_id',
-                            name: 'footnote_id',
-                            label: 'No existing citations',
-
-
+                            id: 'intext_footnote_preview',
+                            name: 'intext_footnote_preview',
+                            label: 'In-text Citation Preview:',
                             // Called by the main setupContent call on dialog initialization.
                             setup: function( element ) {
                                 var dialog = this.getDialog(),
                                     $el = $('#' + this.domId),
                                     $footnotes, $this;
-
                                 dialog.footnotes_el = $el;
-
                                 editor = dialog.getParentEditor();
-                                // Dynamically add existing footnotes:
-                                $footnotes = $(editor.editable().$).find('.footnotes ol');
                                 $this = this;
-
-                                if ($footnotes.length > 0) {
-                                    if ($el.find('p').length == 0) {
-                                        $el.append('<p style="margin-bottom: 10px;"><strong>OR:</strong> Choose citation:</p><ol class="footnotes_list"></ol>');
-                                    } else {
-                                        $el.find('ol').empty();
-                                    }
-
-                                    var radios = '';
-                                    $footnotes.find('li').each(function(){
-                                        var $item = $(this);
-                                        var footnote_id = $item.attr('data-footnote-id');
-                                        radios += '<li style="margin-left: 15px;"><input type="radio" name="footnote_id" value="' + footnote_id + '" id="fn_' + footnote_id + '" /> <label for="fn_' + footnote_id + '" style="white-space: normal; display: inline-block; padding: 0 25px 0 5px; vertical-align: top; margin-bottom: 10px;">' + $item.find('cite').text() + '</label></li>';
-                                    });
-
-                                    $el.children('label,div').css('display', 'none');
-                                    $el.find('ol').html(radios);
-                                    $el.find(':radio').change(function(){;
-                                        $el.find(':text').val($(this).val());
-                                    });
-
-                                } else {
-                                    $el.children('div').css('display', 'none');
-                                }
-                            }
+								//add preview block 
+								$el.children('div').css('display', 'none');
+								$el.append('<style>.validation-error{color: #B14644; padding: 0 0 10px;} .intext-citation-preview a{color: blue; text-decoration: underline; pointer-events: none; cursor: default;}</style><div style="padding: 10px 0 10px 10px; border: solid 1px #B6B6B6;" class="intext-citation-preview"></div>');
+								if (!$('.intext-citation-validation').length)
+									$('<div class="intext-citation-validation validation-error"></div>').insertBefore($el);
+							}
                         }
                     ]
                 },
@@ -82,12 +73,10 @@
             // Invoked when the dialog is loaded.
             onShow: function() {
                 this.setupContent();
-
                 var dialog = this;
-                CKEDITOR.on( 'instanceLoaded', function( evt ) {
-                    dialog.editor_name = evt.editor.name;
-                } );
-
+                //clear any validation messages
+				$('.intext-citation-validation').html('');
+				
                 // Allow page to scroll with dialog to allow for many/long footnotes
                 // (https://github.com/andykirk/CKEditorFootnotes/issues/12)
                 jQuery('.cke_dialog').css({'position': 'absolute', 'top': '2%'});
@@ -96,17 +85,20 @@
 
                 CKEDITOR.replaceAll( function( textarea, config ) {
                     // Make sure the textarea has the correct class:
-                    if (!textarea.className.match(/footnote_text/)) {
+                    if (!textarea.className.match(/citation_footnote_text/) &&
+						!textarea.className.match(/intext_footnote_text/)) {
                         return false;
                     }
-
+					if (textarea.className.match(/intext_footnote_text/))
+						dialog.intext_editor_name = textarea.id;
+					else 
+						dialog.citation_editor_name = textarea.id;
                     // Make sure we only instantiate the relevant editor:
                     var el = textarea;
                     while ((el = el.parentElement) && !el.classList.contains(current_editor_id));
                     if (!el) {
                         return false;
                     }
-                    //console.log(el);
                     config.toolbarGroups = [
                         { name: 'editing',     groups: [ 'undo', 'find', 'selection', 'spellchecker' ] },
                         { name: 'clipboard',   groups: [ 'clipboard' ] },
@@ -119,13 +111,16 @@
                     config.resize_enabled = false;
                     config.autoGrow_minHeight = 80;
                     config.removePlugins = 'cite';
-
                     config.on = {
-                        focus: function( evt ){
-                            var $editor_el = $('#' + evt.editor.id + '_contents');
-                            $editor_el.parents('tr').next().find(':checked').attr('checked', false);
-                            $editor_el.parents('tr').next().find(':text').val('');
-                        }
+						instanceReady: function(evt) {
+							$(this.editable().$).css('margin','10px');
+							if (textarea.className.match(/intext_footnote_text/)) 
+								$('.intext-citation-preview').html($('<div/>').text('[!a!][1][/!a!]').html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>')); 
+						},
+                        change: function(evt) {
+							if (textarea.className.match(/intext_footnote_text/)) 
+								$('.intext-citation-preview').html($('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>')); 
+						}
                     };
                     return true;
                 });
@@ -135,32 +130,30 @@
             // This method is invoked once a user clicks the OK button, confirming the dialog.
             onOk: function() {
                 var dialog = this;
-                var footnote_editor = CKEDITOR.instances[dialog.editor_name];
-                var footnote_id     = dialog.getValueOf('tab-basic', 'footnote_id');
-                var footnote_data   = footnote_editor.getData();
-                footnote_editor.destroy();
-
-                if (footnote_id == '') {
-                    // No existing id selected, check for new footnote:
-                    if (footnote_data == '') {
-                        // Nothing entered, so quit:
-                        return;
-                    } else {
-                        // Insert new footnote:
-                        editor.plugins.cite.build(footnote_data, true, editor);
-                    }
-                } else {
-                    // Insert existing footnote:
-                    editor.plugins.cite.build(footnote_id, false, editor);
-                }
-                // Destroy the editor so it's rebuilt properly next time:
+                var citation_data = CKEDITOR.instances[dialog.citation_editor_name].getData();
+				var intext_citation_data = CKEDITOR.instances[dialog.intext_editor_name].getData();
+                if (intext_citation_data && !intext_citation_data.match(/\[!a!\].+\[\/!a!\]/)) {
+					$('.intext-citation-validation').html("The In-Text Citation must contain the link anchor tags with text between them<br>eg: Weinberg [!a!]1967[/!a!].");
+					return false;
+				}
+				else
+				if (!citation_data) {
+					$('.intext-citation-validation').html("New Citation is required.");
+					return false;
+				}
+				else $('.intext-citation-validation').text("");
+				
+				CKEDITOR.instances[dialog.citation_editor_name].destroy();
+				CKEDITOR.instances[dialog.intext_editor_name].destroy();
+				CKEDITOR.instances.doc.plugins.cite.insertCitation(
+					citation_data, editor, intext_citation_data);
                 return;
             },
 
             onCancel: function() {
                 var dialog = this;
-                var footnote_editor = CKEDITOR.instances[dialog.editor_name];
-                footnote_editor.destroy();
+                CKEDITOR.instances[dialog.intext_editor_name].destroy();
+				CKEDITOR.instances[dialog.citation_editor_name].destroy();
             }
         };
     });
