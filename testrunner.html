@@ -32,8 +32,11 @@
 		<textarea class="form-control" name="doc"></textarea>
 	</div>
     <script>
-		var editorElem = document.getElementById("ckeditor-container");
-		var editor = CKEDITOR.replace("doc");
+		;(function(global){
+			var editorElem = document.getElementById("ckeditor-container");
+			var editor = CKEDITOR.replace("doc");
+			global.editor = editor;
+		})(this);
     </script>
 	<script src="ckeditor/plugins/cite/tests/plugin-spec.js"></script>
 	<script>
