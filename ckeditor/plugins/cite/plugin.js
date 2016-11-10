@@ -297,6 +297,8 @@
 			
             // Insert the marker:
 			var $contents = $(editor.editable().$);
+			if (!$contents.find('.cite-cleaner').length)
+				$contents.prepend('<div class="cite-cleaner hidden"></div>');
 			$contents.find('.cite-cleaner').html(footnote);
 			var cleaned_footnote = $contents.find('.cite-cleaner').html();
 			if (!cleaned_footnote) console.error('Couldnt find data in cite-cleaner');
@@ -337,6 +339,8 @@
 			//so ckeditor can clean the string if it is not valid html 
 			//then retrieve it back as the footnote 
 			var $contents = $(editor.editable().$);
+			if (!$contents.find('.cite-cleaner').length)
+				$contents.prepend('<div class="cite-cleaner hidden"></div>');
 			$contents.find('.cite-cleaner').html(footnote);
 			var cleaned_footnote = $contents.find('.cite-cleaner').html();
 			if (!cleaned_footnote) console.error('Couldnt find data in cite-cleaner');
