@@ -3,11 +3,6 @@
 	
     // Dialog definition.
     CKEDITOR.dialog.add( 'intextCiteDialog', function( editor ) {
-		htmlEncode = function (value){
-		  //create a in-memory div, set it's inner text(which jQuery automatically encodes)
-		  //then grab the encoded contents back out.  The div never exists on the page.
-		  return $('<div/>').text(value).html();
-		};
 		return {
             editor_name: false,
             // Basic properties of the dialog window: title, minimum size.
@@ -29,20 +24,13 @@
                             // Text input field for the footnotes text.
                             type: 'textarea',
                             id: 'new_footnote',
-                            class: 'footnote_text',
-                            label: 'In-Text Citation:',
+                            class: 'edit_intext_footnote_text',
+                            label: 'In-Text Citation Marker:',
                             inputStyle: 'height: 100px',
-							//validate: 
-							
-							/*CKEDITOR.dialog.validate.regex(
-								/\[!a!\]/, 
-								"The In-Text Citation must contain the link anchor tags eg: Weinberg [!a!]1967[/!a!]." )/* && CKEDITOR.dialog.validate.regex(
-								/\[\/!a!\]/, 
-								"The In-Text Citation must contain the link anchor tags eg: Weinberg [!a!]1967[/!a!]." ),*/
                         },
 						{
 							type: 'html',
-							html: '<p style="color: grey; font-style: italic;">The In-Text Citation must contain the link anchor tags.<br /> eg: Weinberg [!a!]1967[/!a!] <br />[!a!] = The open of the link anchor<br />[/!a!] = The close of the link anchor</p>'
+							html: '<p style="color: grey; font-style: italic;">The In-Text Citation must contain the link anchor tags.<br /> eg: Laemmli [!a!]1970[/!a!] <br />[!a!] = The open of the link anchor<br />[/!a!] = The close of the link anchor</p>'
 						},
                         {
                             // Text input field for the footnotes title (explanation).
@@ -50,21 +38,14 @@
                             id: 'footnote_preview',
                             name: 'footnote_preview',
                             label: 'Preview:',
-
-
                             // Called by the main setupContent call on dialog initialization.
                             setup: function( element ) {
                                 var dialog = this.getDialog(),
                                     $el = $('#' + this.domId),
                                     $footnotes, $this;
-
                                 dialog.footnotes_el = $el;
-
                                 editor = dialog.getParentEditor();
-                                // Dynamically add existing footnotes:
-                                $footnotes = $(editor.editable().$).find('.footnotes ol');
                                 $this = this;
-
 								//add preview block 
 								$el.children('div').css('display', 'none');
 								$el.append('<style>.validation-error{color: #B14644; padding: 0 0 10px;} .intext-citation-preview a{color: blue; text-decoration: underline; pointer-events: none; cursor: default;}</style><div style="padding: 10px 0 10px 10px; border: solid 1px #B6B6B6;" class="intext-citation-preview"></div>');
@@ -81,9 +62,6 @@
                 this.setupContent();
 				var $this = this;
                 var dialog = this;
-                CKEDITOR.on( 'instanceLoaded', function( evt ) {
-                    dialog.editor_name = evt.editor.name;
-                } );
 
 				//clear any validation messages
 				$('.intext-citation-validation').html('');
@@ -95,18 +73,17 @@
                 var current_editor_id = dialog.getParentEditor().id;
 				
                 CKEDITOR.replaceAll( function( textarea, config ) {
-                    // Make sure the textarea has the correct class:
-                    if (!textarea.className.match(/footnote_text/)) {
+					// Make sure the textarea has the correct class:
+                    if (!textarea.className.match(/edit_intext_footnote_text/)) {
                         return false;
                     }
-
+					dialog.editor_name = textarea.id;
                     // Make sure we only instantiate the relevant editor:
                     var el = textarea;
                     while ((el = el.parentElement) && !el.classList.contains(current_editor_id));
                     if (!el) {
                         return false;
                     }
-                    //console.log(el);
                     config.toolbarGroups = [
                         { name: 'editing',     groups: [ 'undo', 'find', 'selection', 'spellchecker' ] },
                         { name: 'clipboard',   groups: [ 'clipboard' ] },
@@ -119,7 +96,6 @@
                     config.resize_enabled = false;
                     config.autoGrow_minHeight = 80;
                     config.removePlugins = 'cite';
-					
                     config.on = {
                         instanceReady: function(evt) {
 							$(this.editable().$).css('margin','10px');
@@ -131,13 +107,6 @@
 							this.insertHtml(
 								$('<div/>').text(intext_citation_text).html());  //.replace(/"/,'&quot;'));
 						},
-						
-						focus: function( evt ){
-                            var $editor_el = $('#' + evt.editor.id + '_contents');
-                            $editor_el.parents('tr').next().find(':checked').attr('checked', false);
-                            $editor_el.parents('tr').next().find(':text').val('');
-                        },
-                        
                         change: function(evt) {
 							$('.intext-citation-preview').html($('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));  //.replace(/"/,'&quot;'));
 						}
@@ -150,7 +119,6 @@
             onOk: function() {
 				var dialog = this;
                 var footnote_editor = CKEDITOR.instances[dialog.editor_name];
-                //var footnote_id     = dialog.getValueOf('tabbasic', 'footnote_id');
                 var footnote_data   = $(CKEDITOR.instances[dialog.editor_name].editable().$).text();
                 
 				if (!footnote_data.match(/\[!a!\].+\[\/!a!\]/)) {
@@ -185,7 +153,7 @@
 
             onCancel: function() {
                 var dialog = this;
-                var footnote_editor = CKEDITOR.instances[dialog.editor_name];
+				var footnote_editor = CKEDITOR.instances[dialog.editor_name];
                 footnote_editor.destroy();
             }
         };
