@@ -272,8 +272,22 @@
 				footnote_id = this.generateFootnoteId();
 			}
 			
-            // Insert the marker:
 			var $contents = $(editor.editable().$);	
+			
+			//if any sup widgets are currently focused, then select after it
+			if (editor.widgets.focused) {
+				$('<span class="dummyF">&nbsp;</span>').insertAfter($(editor.widgets.focused.element.$).parent());
+				var sel = editor.getSelection(); 
+				var range = editor.createRange();
+				range.setStart( editor.document.find('span.dummyF').getItem(0), 0 ); 
+				range.setEnd( editor.document.find('span.dummyF').getItem(0), 0 ); 
+				editor.getSelection().selectRanges( [ range ] );
+				$contents.find('span.dummyF').each(function(){
+					$(this).remove();
+				});
+			}
+			
+            // Insert the marker:
 			/*		
 			if (!$contents.find('.cite-cleaner').length)
 				$contents.prepend('<div class="cite-cleaner hidden"></div>');
