@@ -143,7 +143,7 @@
 				else $('.intext-citation-validation').text("");
 				CKEDITOR.instances[dialog.citation_editor_name].destroy();
 				CKEDITOR.instances[dialog.intext_editor_name].destroy();
-				CKEDITOR.instances.doc.plugins.cite.insertCitation(
+				CKEDITOR.instances.doc.plugins.cite.insert(
 					citation_data, editor, intext_citation_data);
                 return;
             },

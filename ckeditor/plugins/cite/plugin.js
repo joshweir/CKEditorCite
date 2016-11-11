@@ -11,7 +11,6 @@
 		
         // The plugin initialization logic goes inside this method.
         init: function(editor) {
-			
             // Check for jQuery
             // @TODO - remove if/when JQ dep. is removed.
             if (typeof(window.jQuery) == 'undefined') {
@@ -21,8 +20,6 @@
 
             // Allow `cite` to be editable:
             CKEDITOR.dtd.$editable['cite'] = 1;
-			CKEDITOR.dtd.$editable['sup'] = 1;
-			CKEDITOR.dtd.$editable['span'] = 1;
 			
             // Add some CSS tweaks:
             var css = '.footnotes{background:#eee; padding:1px 15px;} .footnotes cite{font-style: normal;} .hidden{display: none;}';
@@ -37,32 +34,18 @@
             // Force a reorder on startup to make sure all vars are set: (e.g. footnotes store):
             editor.on('instanceReady', function(evt) {
                 $this.reorderMarkers(editor, 'startup');
-				//setup a hidden div to use for ckeditor auto html cleaning 
-				//of citatino texts if they dont confirm to html - ckeditor auto fixes
-				/*
-				var $contents = $(editor.editable().$);
-				if (!$contents.find('.cite-cleaner').length)
-					$contents.prepend('<div class="cite-cleaner hidden"></div>');
-				*/
             });
 			
             // Add the reorder change event:
             editor.on('change', function(evt) {
                 var d = new Date();
 				var now = d.getTime();
+				//set a locally stored timestamp to prevent an endless loop when reordering markers below..
 				var upd = localStorage.getItem('reordering_markers');
 				if(!upd) {
 					localStorage.setItem('reordering_markers', now);
 				} 
 				
-                // Copy the footnotes_store as we may be doing a cut:
-                if(!evt.editor.footnotes_tmp) {
-                    evt.editor.footnotes_tmp = evt.editor.footnotes_store;
-                }
-				if(!evt.editor.footnotes_inline_tmp) {
-                    evt.editor.footnotes_inline_tmp = evt.editor.footnotes_inline_store;
-                }
-
                 // Prevent no selection errors:
                 if (!evt.editor.getSelection() || !evt.editor.getSelection().getStartElement()) {
                     return;
@@ -72,8 +55,7 @@
                 if (footnote_section && footnote_section.$.className.indexOf('footnotes') != -1) {
                     return;
                 }
-				
-                if(localStorage.getItem('reordering_markers') == d.getTime()) {
+				if(localStorage.getItem('reordering_markers') == d.getTime()) {
 					// SetTimeout seems to be necessary (it's used in the core but can't be 100% sure why)
 					setTimeout(function(){
 							//reorder markers on change
@@ -91,20 +73,17 @@
 			editor.on('change', function(evt) {
 				//store the current value of footnotes citations against 
 				//their inline citations as they may have been changed 
-				//by the user
+				//by the user and will be needed when footnotes are rebuilt
 				var $contents = $(editor.editable().$);
 				//get the current footnotes section header 
 				var $footnotes_header = $contents.find('.footnotes header h2').html();
 				$contents.find('.footnotes li cite').each(function(){
 					var $cite = $(this);
 					var footnote_id = $(this).parent('li').attr('data-footnote-id');
-					$contents.find('sup[data-footnote-id='+ footnote_id
-						+']').each(function(){
-						$(this).attr('data-citation-modified',
-							$cite.html());
+					$contents.find('sup[data-footnote-id='+ footnote_id +']').each(function(){
+						$(this).attr('data-citation-modified', $cite.html());
 						if ($footnotes_header)
-							$(this).attr('data-footnotes-heading', 
-								$footnotes_header);
+							$(this).attr('data-footnotes-heading', $footnotes_header);
 					});
 				});
 			});
@@ -135,11 +114,7 @@
 				def2['marker_after_' + i] = {selector: 'span.inline-citation-after-link', allowedContent: 'strong em span i'};
 				i++;
 			});
-			//for (i; i <= l; i++) {
-			//	footnote_id = footnotes.attr('data-footnote-id');
-            //    def['footnote_' + i] = {selector: '#footnote' + prefix + '-' + i + ' cite', allowedContent: 'a[href]; cite[*](*); strong em span br i'};
-            //}
-
+			
             // Register the footnotes widget.
             editor.widgets.add('footnotes', {
 
@@ -168,7 +143,7 @@
 				editables: def2*/
             });
 			
-			// Define an editor command that opens our dialog.
+			// Define editor commands that open our dialogs
             editor.addCommand('cite', new CKEDITOR.dialogCommand('citeDialog', {
                 allowedContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]',
                 requiredContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]'
@@ -203,27 +178,11 @@
 					editor.execCommand('intext_cite');
 				}
 			});
-			
-			editor.on( 'dialogShow', function( dialogShowEvent )
-			{
-				var selectorObj = dialogShowEvent.data._.contents.tabbasic.new_footnote;
-				
-				// Watch for the "change" event to be fired for the element you 
-				// created a reference to (a select element in this case).
-				selectorObj.on( 'change', function( changeEvent )
-				{
-					alert("selectorObj Changed");
-				});
-			});
-            
+			//add the Edit In-Text Citation right click menu item when right clicking 
+			//in-text citations, remove the copy/cut/paste items.
 			CKEDITOR.on('instanceReady', function(ev) {
 				if (!editor._.menuItems.editCiteCmd) {
 					editor.addMenuGroup('cite');
-					editor.addCommand('editCiteCmd', {
-						exec : function( editor ) {
-							alert('editCiteCmd');
-						}
-					});
 					var editCiteCmd = {
 						command : 'editCiteCmd',
 						group : 'cite'
@@ -260,11 +219,7 @@
 			});
         },
 
-		insertCitation: function(footnote, editor, inline_citation) {
-            this.build(footnote, editor, (inline_citation ? inline_citation : null));
-		},
-
-        build: function(footnote, editor, inline_citation) {
+        insert: function(footnote, editor, inline_citation) {
 			var footnote_id = this.findFootnote(footnote, editor);
 			var is_new = false;
 			if (!footnote_id) {
@@ -274,7 +229,9 @@
 			
 			var $contents = $(editor.editable().$);	
 			
-			//if any sup widgets are currently focused, then select after it
+			//if any sup widgets are currently focused, then place the cursor after them effectively unselecting the widget
+			//this prevents overwriting the existing widget. 
+			//have to use a dummy span, select this span then remove it - couldnt find another way.
 			if (editor.widgets.focused) {
 				$('<span class="dummyF">&nbsp;</span>').insertAfter($(editor.widgets.focused.element.$).parent());
 				var sel = editor.getSelection(); 
@@ -288,15 +245,6 @@
 			}
 			
             // Insert the marker:
-			/*		
-			if (!$contents.find('.cite-cleaner').length)
-				$contents.prepend('<div class="cite-cleaner hidden"></div>');
-			$contents.find('.cite-cleaner').html(footnote);
-			var cleaned_footnote = $contents.find('.cite-cleaner').html();
-			if (!cleaned_footnote) console.error('Couldnt find data in cite-cleaner');
-			$contents.find('.cite-cleaner').html(inline_citation);
-			var cleaned_inline_citation = $contents.find('.cite-cleaner').html();
-			*/
 			var footnote_marker = '<sup data-citation="'+footnote+
 				'" data-footnote-id="' + footnote_id + 
 				'"'+
@@ -310,21 +258,22 @@
 			if (inline_citation)
 				$contents.find('sup[data-footnote-id]:contains(X)')
 					.attr('data-inline-citation', inline_citation);
+			//create a dummy span so that below we can place the cursor after the inserted marker 
+			//allowing the user to continue typing after insert
 			$('<span class="dummyF">&nbsp;</span>').insertAfter($contents.find('sup[data-footnote-id]:contains(X)').parent('span'));
-			
+			//build the footnote if it is new
 			if (is_new) {
                 editor.fire('lockSnapshot');
                 this.addFootnote(this.buildFootnote(footnote_id, footnote, false, editor, inline_citation), editor);
                 editor.fire('unlockSnapshot');
             }
             this.reorderMarkers(editor,'build');
-            
+            //select after the inserted marker widget
             var sel = editor.getSelection(); 
 			var range = editor.createRange();
 			range.setStart( editor.document.find('span.dummyF').getItem(0), 0 ); 
 			range.setEnd( editor.document.find('span.dummyF').getItem(0), 0 ); 
 			editor.getSelection().selectRanges( [ range ] );
-			
 			$contents.find('span.dummyF').each(function(){
 				$(this).remove();
 			});

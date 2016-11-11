@@ -57,7 +57,7 @@
 				else if (!checkHTML($('input[name=inline-citation]').val()))
 					$('.validation-message').text('In-text Citation is not valid html.');
 				else 
-					CKEDITOR.instances.doc.plugins.cite.insertCitation(
+					CKEDITOR.instances.doc.plugins.cite.insert(
 						$('input[name=citation]').val(), 
 						CKEDITOR.instances.doc, 
 						$('input[name=inline-citation]').val());
