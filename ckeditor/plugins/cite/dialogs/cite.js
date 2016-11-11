@@ -72,7 +72,8 @@
             onShow: function() {
                 this.setupContent();
                 var dialog = this;
-                //clear any validation messages
+                
+				//clear any validation messages
 				$('.intext-citation-validation').html('');
 				
                 // Allow page to scroll with dialog to allow for many/long footnotes
