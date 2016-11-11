@@ -22,8 +22,8 @@
 			<div>
 				<label style="display: inline-block; width: 200px;">Citation: </label>
 				<input style="width:50%;" name="citation" class="citation" 
-					placeholder="Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg."
-					value="Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg.">
+					placeholder="Johnston, E. L., Piola, R. F., &amp; Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg."
+					value="Johnston, E. L., Piola, R. F., &amp; Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg.">
 			<div>
 			<input type="submit" value="Insert Citation at Cursor">
 		</form>
@@ -46,7 +46,7 @@
 		$(document).ready(function(){
 			$('form.insert-citation').on('submit', function(evt) {
 				evt.preventDefault();
-				CKEDITOR.instances.doc.plugins.cite.insertCitation(
+				CKEDITOR.instances.doc.plugins.cite.insert(
 					$('input[name=citation]').val(), 
 					CKEDITOR.instances.doc, 
 					$('input[name=inline-citation]').val());

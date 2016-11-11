@@ -30,7 +30,9 @@
                         },
 						{
 							type: 'html',
-							html: '<p style="color: grey; font-style: italic;">The In-Text Citation must contain the link anchor tags.<br /> eg: Laemmli [!a!]1970[/!a!] <br />[!a!] = The open of the link anchor<br />[/!a!] = The close of the link anchor</p>'
+							html: '<p style="color: grey; font-style: italic;">The In-Text Citation must contain ' + 
+								'the link anchor tags.<br /> eg: Laemmli [!a!]1970[/!a!] <br />[!a!] = The open of' + 
+								' the link anchor<br />[/!a!] = The close of the link anchor</p>'
 						},
                         {
                             // Text input field for the footnotes title (explanation).
@@ -48,7 +50,10 @@
                                 $this = this;
 								//add preview block 
 								$el.children('div').css('display', 'none');
-								$el.append('<style>.validation-error{color: #B14644; padding: 0 0 10px;} .intext-citation-preview a{color: blue; text-decoration: underline; pointer-events: none; cursor: default;}</style><div style="padding: 10px 0 10px 10px; border: solid 1px #B6B6B6;" class="intext-citation-preview"></div>');
+								$el.append('<style>.validation-error{color: #B14644; padding: 0 0 10px;} ' + 
+									'.intext-citation-preview a{color: blue; text-decoration: underline; ' + 
+									'pointer-events: none; cursor: default;}</style><div style="padding: ' + 
+									'10px 0 10px 10px; border: solid 1px #B6B6B6;" class="intext-citation-preview"></div>');
 								if (!$('.intext-citation-validation').length)
 									$('<div class="intext-citation-validation validation-error"></div>').insertBefore($el);
 							}
@@ -105,11 +110,14 @@
 								intext_citation_text = '[!a!]' + intext_citation_text + '[/!a!]';
 							}
 							this.insertHtml(intext_citation_text);
-								//$('<div/>').text(intext_citation_text).html());  //.replace(/"/,'&quot;'));
-							$('.intext-citation-preview').html($(this.editable().$).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));      //$('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));  //.replace(/"/,'&quot;'));
+							$('.intext-citation-preview').html(
+								$(this.editable().$).html().replace('[!a!]','<a href="#">')
+									.replace('[/!a!]','</a>'));      
 						},
                         change: function(evt) {
-							$('.intext-citation-preview').html($(this.editable().$).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));      //$('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));  //.replace(/"/,'&quot;'));
+							$('.intext-citation-preview').html(
+								$(this.editable().$).html().replace('[!a!]','<a href="#">')
+									.replace('[/!a!]','</a>'));      
 						}
                     };
                     return true;
@@ -123,7 +131,8 @@
                 var footnote_data   = CKEDITOR.instances[dialog.editor_name].getData(); 
                 
 				if (!footnote_data.match(/\[!a!\].+\[\/!a!\]/)) {
-					$('.intext-citation-validation').html("The In-Text Citation must contain the link anchor tags with text between them<br>eg: Weinberg [!a!]1967[/!a!].");
+					$('.intext-citation-validation').html("The In-Text Citation must contain the link " + 
+						"anchor tags with text between them<br>eg: Weinberg [!a!]1967[/!a!].");
 					return false;
 				}
 				else $('.intext-citation-validation').text("");

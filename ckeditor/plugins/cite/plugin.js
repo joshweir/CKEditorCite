@@ -35,6 +35,22 @@
             editor.on('instanceReady', function(evt) {
                 $this.reorderMarkers(editor, 'startup');
             });
+            
+            //unselect any focused sup widgets if user clicks away from the editor, as if they then 
+            //going to insert a citation external to ckeditor, we dont want to overwrite any existing citation markers
+            editor.on('blur', function() {
+				if (editor.widgets.focused) {
+					$('<span class="dummyF">&nbsp;</span>').insertAfter($(editor.widgets.focused.element.$).parent());
+					var sel = editor.getSelection(); 
+					var range = editor.createRange();
+					range.setStart( editor.document.find('span.dummyF').getItem(0), 0 ); 
+					range.setEnd( editor.document.find('span.dummyF').getItem(0), 0 ); 
+					editor.getSelection().selectRanges( [ range ] );
+					$contents.find('span.dummyF').each(function(){
+						$(this).remove();
+					});
+				}
+			});
 			
             // Add the reorder change event:
             editor.on('change', function(evt) {
@@ -243,7 +259,8 @@
 					$(this).remove();
 				});
 			}
-			
+			inline_citation = (inline_citation ? inline_citation.replace(/"/,'&quot;') : null);
+			footnote = footnote.replace(/"/,'&quot;');
             // Insert the marker:
 			var footnote_marker = '<sup data-citation="'+footnote+
 				'" data-footnote-id="' + footnote_id + 
@@ -258,6 +275,7 @@
 			if (inline_citation)
 				$contents.find('sup[data-footnote-id]:contains(X)')
 					.attr('data-inline-citation', inline_citation);
+			
 			//create a dummy span so that below we can place the cursor after the inserted marker 
 			//allowing the user to continue typing after insert
 			$('<span class="dummyF">&nbsp;</span>').insertAfter($contents.find('sup[data-footnote-id]:contains(X)').parent('span'));
@@ -268,6 +286,7 @@
                 editor.fire('unlockSnapshot');
             }
             this.reorderMarkers(editor,'build');
+            console.log($contents.find('sup[data-footnote-id]').parent().html());
             //select after the inserted marker widget
             var sel = editor.getSelection(); 
 			var range = editor.createRange();
@@ -282,21 +301,9 @@
 		
 		findFootnote: function(footnote, editor) {
 			if (!editor.footnotes_store) return null;
-			/*
-			//firstly insert the footnote into a hidden div in the ckeditor 
-			//so ckeditor can clean the string if it is not valid html 
-			//then retrieve it back as the footnote 
-			var $contents = $(editor.editable().$);
-			if (!$contents.find('.cite-cleaner').length)
-				$contents.prepend('<div class="cite-cleaner hidden"></div>');
-			$contents.find('.cite-cleaner').html(footnote);
-			var cleaned_footnote = $contents.find('.cite-cleaner').html();
-			if (!cleaned_footnote) console.error('Couldnt find data in cite-cleaner');
-			*/
 			var footnote_id = null;
 			for (var key in editor.footnotes_store) {
 				if (editor.footnotes_store.hasOwnProperty(key)) {
-					//console.log('store: ', editor.footnotes_store[key], ' footnote: ', footnote);
 					if (editor.footnotes_store[key] == footnote) {
 						footnote_id = key;
 						break;
@@ -406,9 +413,7 @@
 				  , marker_ref
                   , n = data.order.indexOf(footnote_id);
 				// If this is the markers first occurrence:
-				//console.log(citation_text);
-				//console.log(citation_text_modified);
-                if (n == -1) {
+				if (n == -1) {
                     // Store the id:
                     data.order.push(footnote_id);
 					data.original_citation_text.push(citation_text);
@@ -416,19 +421,18 @@
 					data.inline_citation.push(inline_citation_text);
                     n = data.order.length;
                     data.occurrences[footnote_id] = 1;
-                    //marker_ref = n + '-1';
-					marker_ref = '1';
+                    marker_ref = '1';
                 } else {
                     // Otherwise increment the number of occurrences:
                     // (increment n due to zero-index array)
                     n++;
                     data.occurrences[footnote_id]++;
-                    //marker_ref = n + '-' + data.occurrences[footnote_id];
-					marker_ref = data.occurrences[footnote_id];
+                    marker_ref = data.occurrences[footnote_id];
                 }
                 // Replace the marker contents:
-                var marker = self.generateMarkerHtml(prefix, citation_text, citation_text_modified, n, marker_ref, footnote_id, 
-						inline_citation_text);
+                var marker = self.generateMarkerHtml(prefix, citation_text, 
+								citation_text_modified, n, marker_ref, footnote_id, 
+								inline_citation_text);
 				$(this).html(marker);
             });
 
@@ -447,21 +451,13 @@
                 footnote_id   = data.order[i];
 				footnote_text = data.original_citation_text[i]; //$contents.find('.footnotes [data-footnote-id=' + footnote_id + '] cite').html();
 				footnote_text_modified = data.modified_citation_text[i];
-				
-				// If the footnotes text can't be found in the editor, it may be in the tmp store
-                // following a cut:
-                //if (!footnote_text) {
-				//	footnote_text = (editor.footnotes_tmp && editor.footnotes_tmp[footnote_id] ? editor.footnotes_tmp[footnote_id] : null);
-                //}
-				
-                footnotes += this.buildFootnote(footnote_id, footnote_text_modified, data, editor);
+				footnotes += this.buildFootnote(footnote_id, footnote_text_modified, data, editor);
                 // Store the footnotes for later use (post cut/paste):
                 editor.footnotes_store[footnote_id] = footnote_text;
 			}
 			
 			// Insert the footnotes into the list:
-            //$contents.find('.footnotes ol').html(footnotes);
-			this.addFootnote(footnotes, editor, true);
+            this.addFootnote(footnotes, editor, true);
 			
             // Next we need to reinstate the 'editable' properties of the footnotes.
             // (we have to do this individually due to Widgets 'fireOnce' for editable selectors)
@@ -509,7 +505,8 @@
 				//Clark et al. [!a!]2015[/!a!] foo
 				//if there are no anchors, assume anchor around the entire inline citation 
 				if (!inline_citation.match(/\[!a!\]/)) {
-					the_html = '<span class="inline-citation-before-link"></span><a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+					the_html = '<span class="inline-citation-before-link"></span><a href="#footnote' + prefix + 
+					'-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
 						'" data-citation="'+citation_text+'"'+
 						' data-citation-modified="'+citation_text_modified+'"' +
 						' data-inline-citation="'+
@@ -524,7 +521,8 @@
 				else {
 					var parts = inline_citation.split(/\[!a!\]/);
 					var parts_2 = parts[1].split(/\[\/!a!\]/);
-					the_html = '<span class="inline-citation-before-link">'+parts[0]+'</span>' + '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+					the_html = '<span class="inline-citation-before-link">'+parts[0]+'</span>' + '<a href="#footnote' + 
+						prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
 						'" data-citation="'+citation_text+'"'+
 						' data-citation-modified="'+citation_text_modified+'"' +
 						' data-inline-citation="'+inline_citation+
@@ -533,7 +531,8 @@
 				}
 			}
 			else {
-				the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
+				the_html = '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + 
+					footnote_id + '-' + marker_ref + 
 					'" data-citation="'+citation_text+'"'+
 					' data-citation-modified="'+citation_text_modified+'"' +
 					' data-footnote-id="' + footnote_id + '">[' + n + ']</a>';
