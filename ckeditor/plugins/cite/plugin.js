@@ -273,8 +273,8 @@
 			}
 			
             // Insert the marker:
-			/*
-			var $contents = $(editor.editable().$);			
+			var $contents = $(editor.editable().$);	
+			/*		
 			if (!$contents.find('.cite-cleaner').length)
 				$contents.prepend('<div class="cite-cleaner hidden"></div>');
 			$contents.find('.cite-cleaner').html(footnote);
