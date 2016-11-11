@@ -10,7 +10,6 @@
             title: 'Insert Citation',
             minWidth: 400,
             minHeight: 200,
-            footnotes_el: false,
 
             // Dialog window contents definition.
             contents: [
@@ -56,7 +55,6 @@
                                 var dialog = this.getDialog(),
                                     $el = $('#' + this.domId),
                                     $footnotes, $this;
-                                dialog.footnotes_el = $el;
                                 editor = dialog.getParentEditor();
                                 $this = this;
 								//add preview block 
@@ -104,7 +102,7 @@
                         { name: 'clipboard',   groups: [ 'clipboard' ] },
                         { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
                     ]
-                    config.allowedContent = 'br em strong; a[!href]';
+                    config.allowedContent = 'em strong; a[!href]';
                     config.enterMode = CKEDITOR.ENTER_BR;
                     config.autoParagraph = false;
                     config.height = 80;
@@ -142,7 +140,6 @@
 					return false;
 				}
 				else $('.intext-citation-validation').text("");
-				
 				CKEDITOR.instances[dialog.citation_editor_name].destroy();
 				CKEDITOR.instances[dialog.intext_editor_name].destroy();
 				CKEDITOR.instances.doc.plugins.cite.insertCitation(
