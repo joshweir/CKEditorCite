@@ -24,7 +24,7 @@
                             // Text input field for the footnotes text.
                             type: 'textarea',
                             id: 'new_footnote',
-                            class: 'edit_intext_footnote_text',
+                            class: 'edit_footnote_text',
                             label: 'In-Text Citation Marker:',
                             inputStyle: 'height: 100px',
                         },
@@ -74,7 +74,7 @@
 				
                 CKEDITOR.replaceAll( function( textarea, config ) {
 					// Make sure the textarea has the correct class:
-                    if (!textarea.className.match(/edit_intext_footnote_text/)) {
+                    if (!textarea.className.match(/edit_footnote_text/)) {
                         return false;
                     }
 					dialog.editor_name = textarea.id;
@@ -89,7 +89,7 @@
                         { name: 'clipboard',   groups: [ 'clipboard' ] },
                         { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
                     ]
-                    config.allowedContent = 'br em strong; a[!href]';
+                    config.allowedContent = 'em strong; a[!href]';
                     config.enterMode = CKEDITOR.ENTER_BR;
                     config.autoParagraph = false;
                     config.height = 80;
@@ -104,11 +104,12 @@
 								intext_citation_text = $(editor.widgets.focused.element.$).text();
 								intext_citation_text = '[!a!]' + intext_citation_text + '[/!a!]';
 							}
-							this.insertHtml(
-								$('<div/>').text(intext_citation_text).html());  //.replace(/"/,'&quot;'));
+							this.insertHtml(intext_citation_text);
+								//$('<div/>').text(intext_citation_text).html());  //.replace(/"/,'&quot;'));
+							$('.intext-citation-preview').html($(this.editable().$).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));      //$('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));  //.replace(/"/,'&quot;'));
 						},
                         change: function(evt) {
-							$('.intext-citation-preview').html($('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));  //.replace(/"/,'&quot;'));
+							$('.intext-citation-preview').html($(this.editable().$).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));      //$('<div/>').text($(this.editable().$).text()).html().replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));  //.replace(/"/,'&quot;'));
 						}
                     };
                     return true;
@@ -119,7 +120,7 @@
             onOk: function() {
 				var dialog = this;
                 var footnote_editor = CKEDITOR.instances[dialog.editor_name];
-                var footnote_data   = $(CKEDITOR.instances[dialog.editor_name].editable().$).text();
+                var footnote_data   = CKEDITOR.instances[dialog.editor_name].getData(); 
                 
 				if (!footnote_data.match(/\[!a!\].+\[\/!a!\]/)) {
 					$('.intext-citation-validation').html("The In-Text Citation must contain the link anchor tags with text between them<br>eg: Weinberg [!a!]1967[/!a!].");
@@ -131,16 +132,7 @@
 				//get chunk before, within and after link anchors
 				var parts = footnote_data.split(/\[!a!\]/);
 				var parts_2 = parts[1].split(/\[\/!a!\]/);
-				/*
-				the_html = '<span class="inline-citation-before-link">'+htmlEncode(parts[0])+'</span>' + '<a href="#footnote' + prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
-					'" data-citation="'+htmlEncode(citation_text).replace(/"/,'&quot;')+'"'+
-					' data-citation-modified="'+htmlEncode(citation_text_modified).replace(/"/,'&quot;')+'"' +
-					' data-inline-citation="'+htmlEncode(inline_citation).replace(/"/,'&quot;')+
-					'" data-footnote-id="' + footnote_id + '">' + htmlEncode(parts_2[0]) + '</a>' + 
-					'<span class="inline-citation-after-link">'+htmlEncode((parts_2[1] ? parts_2[1] : ''))+'</span>';
-				*/
 				//replace the span before anchor, span after anchor, text within the anchor
-				
 				$(editor.widgets.focused.element.$).find('.inline-citation-before-link').html(parts[0]);
 				$(editor.widgets.focused.element.$).find('.inline-citation-after-link').html((parts_2[1] ? parts_2[1] : ''));
 				$(editor.widgets.focused.element.$).find('a').html(parts_2[0]);
