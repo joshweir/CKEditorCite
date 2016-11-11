@@ -27,28 +27,40 @@
 			<div>
 				<label style="display: inline-block; width: 300px;">Citation: </label>
 				<input style="width:50%;" name="citation" class="citation" 
-					placeholder="Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg."
-					value="Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg.">
+					placeholder="Johnston, E. L., Piola, R. F., &amp;amp; Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg."
+					value="Johnston, E. L., Piola, R. F., &amp;amp; Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg.">
 			<div>
 			<input type="submit" value="Insert Citation at Cursor">
 		</form>
+		<div style="color: red;" class="validation-message"></div>
 	</div>
     <div id="ckeditor-container">
 		<textarea class="form-control" name="doc"></textarea>
 	</div>
-	<script src="node_modules/he/he.js"></script>
-    <script>
+	<script>
 		;(function(){
 			var editorElem = document.getElementById("ckeditor-container");
 			var editor = CKEDITOR.replace("doc");
 		})();
 		$(document).ready(function(){
+			var checkHTML = function(html) {
+							  var doc = document.createElement('div');
+							  doc.innerHTML = html;
+							  return ( doc.innerHTML === html );
+							}
+			$('.validation-message').text('');
 			$('form.insert-citation').on('submit', function(evt) {
 				evt.preventDefault();
-				CKEDITOR.instances.doc.plugins.cite.insertCitation(
-					he.encode($('input[name=citation]').val()), 
-					CKEDITOR.instances.doc, 
-					he.encode($('input[name=inline-citation]').val()));
+				$('.validation-message').text('');
+				if (!checkHTML($('input[name=citation]').val()))
+					$('.validation-message').text('Citation is not valid html.');
+				else if (!checkHTML($('input[name=inline-citation]').val()))
+					$('.validation-message').text('In-text Citation is not valid html.');
+				else 
+					CKEDITOR.instances.doc.plugins.cite.insertCitation(
+						$('input[name=citation]').val(), 
+						CKEDITOR.instances.doc, 
+						$('input[name=inline-citation]').val());
 			});
 		});
 	</script>
