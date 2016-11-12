@@ -27,6 +27,7 @@
 			<div>
 			<input type="submit" value="Insert Citation at Cursor">
 		</form>
+		<div style="color: red;" class="validation-message"></div>
 	</div>
     <div id="ckeditor-container">
 		<textarea class="form-control" name="doc"></textarea>
@@ -44,12 +45,20 @@
 			mocha.run();
 		});
 		$(document).ready(function(){
+			var citeplugin = CKEDITOR.instances.doc.plugins.cite;
+			$('.validation-message').text('');
 			$('form.insert-citation').on('submit', function(evt) {
 				evt.preventDefault();
-				CKEDITOR.instances.doc.plugins.cite.insert(
-					$('input[name=citation]').val(), 
-					CKEDITOR.instances.doc, 
-					$('input[name=inline-citation]').val());
+				$('.validation-message').text('');
+				if (!citeplugin.isValidHtml($('input[name=citation]').val()))
+					$('.validation-message').text('Citation is not valid html.');
+				else if (!citeplugin.isValidHtml($('input[name=inline-citation]').val()))
+					$('.validation-message').text('In-text Citation is not valid html.');
+				else 
+					citeplugin.insert(
+						$('input[name=citation]').val(), 
+						CKEDITOR.instances.doc, 
+						$('input[name=inline-citation]').val());
 			});
 		});
 	</script>

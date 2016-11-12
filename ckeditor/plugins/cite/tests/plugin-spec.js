@@ -181,7 +181,7 @@ describe('insert', function() {
 						'test <strong>custom footnote</strong> data'+i);
 					assert.equal(
 						$this.find('a').attr('data-inline-citation'), 
-						'<foo [!a!]"inside'+i+'[/!a!] bar>');
+						'<foo [!a!][!quot!]inside'+i+'[/!a!] bar>');
 					assert.equal(
 						$this.find('a').attr('data-footnote-id'), 
 						marker_footnote_id);
@@ -257,7 +257,7 @@ describe('insert', function() {
 						'test <strong>custom footnote</strong> data'+i);
 					assert.equal(
 						$this.find('a').attr('data-inline-citation'), 
-						'<foo [!a!]"inside'+i+'[/!a!] bar>');
+						'<foo [!a!][!quot!]inside'+i+'[/!a!] bar>');
 					assert.equal(
 						$this.find('a').attr('data-footnote-id'), 
 						marker_footnote_id);
@@ -333,7 +333,7 @@ describe('insert', function() {
 							'test <strong>custom footnote</strong> data'+i);
 						assert.equal(
 							$this.find('a').attr('data-inline-citation'), 
-							'<foo [!a!]"inside'+i+'[/!a!] bar>');
+							'<foo [!a!][!quot!]inside'+i+'[/!a!] bar>');
 						assert.equal(
 							$this.find('a').attr('data-footnote-id'), 
 							marker_footnote_id);
@@ -366,7 +366,7 @@ describe('insert', function() {
 							'test <strong>custom footnote</strong> data'+(i-1));
 						assert.equal(
 							$this.find('a').attr('data-inline-citation'), 
-							'<foo [!a!]"inside'+(i-1)+'[/!a!] bar>');
+							'<foo [!a!][!quot!]inside'+(i-1)+'[/!a!] bar>');
 						assert.equal(
 							$this.find('a').attr('data-footnote-id'), 
 							marker_footnote_id);
@@ -714,7 +714,7 @@ describe('Rebuilding Footnotes on change', function() {
 		
 		//insert footnote
 		CKEDITOR.instances.doc.plugins.cite.insert(
-			'Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In <i>Biological invasions in marine ecosystems</i> (pp. 133-151). Springer Berlin Heidelberg.', CKEDITOR.instances.doc);
+			'Johnston, E. L., Piola, R. F., &amp; Clark, G. F. (2009). The role of propagule pressure in invasion success. In <i>Biological invasions in marine ecosystems</i> (pp. 133-151). Springer Berlin Heidelberg.', CKEDITOR.instances.doc);
 		editor.fire('change');
 		
 		//verify first 2 footnote markers reference the same first reference
@@ -726,7 +726,7 @@ describe('Rebuilding Footnotes on change', function() {
 				
 				//insert same footnote again
 				CKEDITOR.instances.doc.plugins.cite.insert(
-					'Johnston, E. L., Piola, R. F., & Clark, G. F. (2009). The role of propagule pressure in invasion success. In <i>Biological invasions in marine ecosystems</i> (pp. 133-151). Springer Berlin Heidelberg.', CKEDITOR.instances.doc);
+					'Johnston, E. L., Piola, R. F., &amp; Clark, G. F. (2009). The role of propagule pressure in invasion success. In <i>Biological invasions in marine ecosystems</i> (pp. 133-151). Springer Berlin Heidelberg.', CKEDITOR.instances.doc);
 				editor.fire('change');
 				
 				setTimeout(function() {//wait for the reorder to happen
@@ -828,8 +828,8 @@ describe('generateMarkerHtml', function() {
 		it('should handle citations with double quotes within the citation', function() {
 			assert.equal(
 				'<span class="inline-citation-before-link"></span><a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test&quot; citation" data-citation-modified="test&quot; citation" data-inline-citation="inside&quot; anchor" data-footnote-id="' + 
-					'foo1' + '">inside" anchor</a><span class="inline-citation-after-link"></span>',
+					'" data-citation="test[!quot!] citation" data-citation-modified="test[!quot!] citation" data-inline-citation="inside[!quot!] anchor" data-footnote-id="' + 
+					'foo1' + '">inside&quot; anchor</a><span class="inline-citation-after-link"></span>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
 					1, 'test" citation', 'test" citation', 2, 3, 'foo1', 'inside" anchor')
 				);
@@ -840,7 +840,7 @@ describe('generateMarkerHtml', function() {
 					'" data-citation="test&gt; citation" data-citation-modified="test&gt; citation" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
 					'foo1' + '">inside&lt; anchor</a><span class="inline-citation-after-link"></span>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test> citation', 'test> citation', 2, 3, 'foo1', 'inside< anchor')
+					1, 'test&gt; citation', 'test&gt; citation', 2, 3, 'foo1', 'inside&lt; anchor')
 				);
 			assert.equal(
 				'<span class="inline-citation-before-link"></span><a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +

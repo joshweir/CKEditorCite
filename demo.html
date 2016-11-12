@@ -43,21 +43,17 @@
 			var editor = CKEDITOR.replace("doc");
 		})();
 		$(document).ready(function(){
-			var checkHTML = function(html) {
-							  var doc = document.createElement('div');
-							  doc.innerHTML = html;
-							  return ( doc.innerHTML === html );
-							}
+			var citeplugin = CKEDITOR.instances.doc.plugins.cite;
 			$('.validation-message').text('');
 			$('form.insert-citation').on('submit', function(evt) {
 				evt.preventDefault();
 				$('.validation-message').text('');
-				if (!checkHTML($('input[name=citation]').val()))
+				if (!citeplugin.isValidHtml($('input[name=citation]').val()))
 					$('.validation-message').text('Citation is not valid html.');
-				else if (!checkHTML($('input[name=inline-citation]').val()))
+				else if (!citeplugin.isValidHtml($('input[name=inline-citation]').val()))
 					$('.validation-message').text('In-text Citation is not valid html.');
 				else 
-					CKEDITOR.instances.doc.plugins.cite.insert(
+					citeplugin.insert(
 						$('input[name=citation]').val(), 
 						CKEDITOR.instances.doc, 
 						$('input[name=inline-citation]').val());

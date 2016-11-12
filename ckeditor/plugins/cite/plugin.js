@@ -235,7 +235,23 @@
 			});
         },
 
+		isValidHtml: function(html) {
+			var doc = document.createElement('div');
+			doc.innerHTML = html;
+			return ( doc.innerHTML === html );
+		},
+
         insert: function(footnote, editor, inline_citation) {
+			if (footnote && !this.isValidHtml(footnote)) {
+				console.error('Error inserting citation, value for Citation ('+
+					footnote+') is not valid html.');
+				return;
+			}
+			if (inline_citation && !this.isValidHtml(inline_citation)) {
+				console.error('Error inserting citation, value for In-text Citation ('+
+					inline_citation+') is not valid html.');
+				return;
+			}
 			var footnote_id = this.findFootnote(footnote, editor);
 			var is_new = false;
 			if (!footnote_id) {
@@ -501,7 +517,25 @@
         
         generateMarkerHtml: function(prefix, citation_text, citation_text_modified, n, marker_ref, footnote_id, inline_citation) {
 			var the_html = '';
+			citation_text = citation_text.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]');
+			citation_text_modified = citation_text_modified.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]');
+			if (citation_text && !this.isValidHtml(citation_text)) {
+				console.error('Error generatingMarkerHtml, value for Citation ('+
+					citation_text+') is not valid html.');
+				return;
+			}
+			if (citation_text_modified && !this.isValidHtml(citation_text_modified)) {
+				console.error('Error generatingMarkerHtml, value for Citation (modified) ('+
+					citation_text_modified+') is not valid html.');
+				return;
+			}
 			if (inline_citation) {
+				inline_citation = inline_citation.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]');
+				if (inline_citation && !this.isValidHtml(inline_citation)) {
+					console.error('Error generatingMarkerHtml, value for In-text Citation ('+
+						inline_citation+') is not valid html.');
+					return;
+				}
 				//inline_citation will include an anchor placement so could be like this:
 				//Clark et al. [!a!]2015[/!a!] foo
 				//if there are no anchors, assume anchor around the entire inline citation 
