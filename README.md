@@ -15,11 +15,11 @@ The existing Footnotes add on auto numbers the intext footnote markers (eg: <a>[
 
 1. Allows for footnote markers to be customized to confirm to academic journal in-text citation standards, for example instead of 
 
-<a>[1]</a> 
+[[1]](#) 
 
 we could create a marker that looks like this:
 
-Laemmli <a>1970</a>
+Laemmli [1970](#)
 
 2. In-text citations can be edited, multiple markers citing the same reference, could have different marker text/anchors.
 
