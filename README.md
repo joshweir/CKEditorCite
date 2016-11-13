@@ -25,5 +25,5 @@ Check out `demo.html` which presents the functionality in a nutshell.
 
 1. Clone this repo and run `demo.html`; or
 
-2. Copy the `ckeditor/plugins/cite` directory to your ckeditor plugins folder, add `cite` to your config.plugins variable in `ckeditor/config.js`.
+2. Copy the `ckeditor/plugins/cite` directory to your ckeditor plugins folder, add `cite` to the `config.plugins` variable in `ckeditor/config.js`.
 
