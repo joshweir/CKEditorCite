@@ -107,17 +107,21 @@
                     if (!el) {
                         return false;
                     }
+                    /*
                     config.toolbarGroups = [
                         { name: 'editing',     groups: [ 'undo', 'find', 'selection', 'spellchecker' ] },
                         { name: 'clipboard',   groups: [ 'clipboard' ] },
                         { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
                     ]
+                    */
+                    config.toolbar_Basic = [['Bold','Italic']];
+					config.toolbar = 'Basic';
                     config.allowedContent = 'em strong; a[!href]';
                     config.enterMode = CKEDITOR.ENTER_BR;
                     config.autoParagraph = false;
-                    config.height = 80;
+                    config.height = 40;
                     config.resize_enabled = false;
-                    config.autoGrow_minHeight = 80;
+                    config.autoGrow_minHeight = 40;
                     config.removePlugins = 'cite';
                     config.on = {
 						instanceReady: function(evt) {

@@ -89,26 +89,31 @@
                     if (!el) {
                         return false;
                     }
+                    /*
                     config.toolbarGroups = [
                         { name: 'editing',     groups: [ 'undo', 'find', 'selection', 'spellchecker' ] },
                         { name: 'clipboard',   groups: [ 'clipboard' ] },
                         { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
                     ]
+                    */
+                    config.toolbar_Basic = [['Bold','Italic']];
+					config.toolbar = 'Basic';
                     config.allowedContent = 'em strong; a[!href]';
                     config.enterMode = CKEDITOR.ENTER_BR;
                     config.autoParagraph = false;
-                    config.height = 80;
+                    config.height = 40;
                     config.resize_enabled = false;
-                    config.autoGrow_minHeight = 80;
+                    config.autoGrow_minHeight = 40;
                     config.removePlugins = 'cite';
                     config.on = {
                         instanceReady: function(evt) {
 							$(this.editable().$).css('margin','10px');
-							var intext_citation_text = $(editor.widgets.focused.element.$).attr('data-inline-citation').replace(/\[!quot!\]/g,'&quot;');
+							var intext_citation_text = $(editor.widgets.focused.element.$).attr('data-inline-citation');
 							if (!intext_citation_text) {
 								intext_citation_text = $(editor.widgets.focused.element.$).text();
 								intext_citation_text = '[!a!]' + intext_citation_text.replace(/\[!quot!\]/g,'&quot;') + '[/!a!]';
 							}
+							else intext_citation_text = intext_citation_text.replace(/\[!quot!\]/g,'&quot;');
 							this.insertHtml(intext_citation_text);
 							$('.intext-citation-preview').html(
 								$(this.editable().$).html().replace(/\[!quot!\]/g,'&quot;').replace('[!a!]','<a href="#">')
