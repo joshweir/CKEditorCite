@@ -97,9 +97,9 @@
 					var $cite = $(this);
 					var footnote_id = $(this).parent('li').attr('data-footnote-id');
 					$contents.find('sup[data-footnote-id='+ footnote_id +']').each(function(){
-						$(this).attr('data-citation-modified', $cite.html().replace(/"/,'[!quot!]').replace('&quot;','[!quot!]') );
+						$(this).attr('data-citation-modified', $cite.html().replace(/"/g,'[!quot!]').replace(/&quot;/g,'[!quot!]') );
 						if ($footnotes_header)
-							$(this).attr('data-footnotes-heading', $footnotes_header.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]') );
+							$(this).attr('data-footnotes-heading', $footnotes_header.replace(/"/g,'[!quot!]').replace(/&quot;/g,'[!quot!]') );
 					});
 				});
 			});
@@ -236,6 +236,7 @@
         },
 
 		isValidHtml: function(html) {
+			html = html.replace(/&quot;/g,'"');
 			var doc = document.createElement('div');
 			doc.innerHTML = html;
 			return ( doc.innerHTML === html );
@@ -275,8 +276,8 @@
 					$(this).remove();
 				});
 			}
-			inline_citation = (inline_citation ? inline_citation.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]') : null);
-			footnote = footnote.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]');
+			inline_citation = (inline_citation ? inline_citation.replace(/"/g,'[!quot!]').replace(/&quot;/g,'[!quot!]') : null);
+			footnote = footnote.replace(/"/g,'[!quot!]').replace(/&quot;/g,'[!quot!]');
             // Insert the marker:
 			var footnote_marker = '<sup data-citation="'+footnote+
 				'" data-footnote-id="' + footnote_id + 
@@ -302,7 +303,6 @@
                 editor.fire('unlockSnapshot');
             }
             this.reorderMarkers(editor,'build');
-            console.log($contents.find('sup[data-footnote-id]').parent().html());
             //select after the inserted marker widget
             var sel = editor.getSelection(); 
 			var range = editor.createRange();
@@ -318,7 +318,7 @@
 		findFootnote: function(footnote, editor) {
 			if (!editor.footnotes_store) return null;
 			var footnote_id = null;
-			footnote = footnote.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]');
+			footnote = footnote.replace(/"/g,'[!quot!]').replace(/&quot;/g,'[!quot!]');
 			for (var key in editor.footnotes_store) {
 				if (editor.footnotes_store.hasOwnProperty(key)) {
 					if (editor.footnotes_store[key] == footnote) {
@@ -355,7 +355,7 @@
             footnote = '<li id="footnote' + prefix + '-' + footnote_id + '" data-footnote-id="' + footnote_id + '"' + 
 				(inline_citation ? ' data-inline-citation="' + inline_citation + '"' : '') + '>' + 
 				(inline_citation ? '' : '<sup>' + links + '</sup>') + '<cite>' + 
-				footnote_text.replace('[!quot!]','&quot;') + '</cite></li>';
+				footnote_text.replace(/\[!quot!\]/g,'&quot;') + '</cite></li>';
             return footnote;
         },
 
@@ -367,7 +367,7 @@
 				var header_title = editor.config.footnotesTitle ? editor.config.footnotesTitle : 'Footnotes';
                 var data_header_title = 
 					$contents.find('sup[data-footnotes-heading]').attr('data-footnotes-heading');
-				header_title = (data_header_title ? data_header_title : header_title).replace('[!quot!]','&quot;')  ;
+				header_title = (data_header_title ? data_header_title : header_title).replace(/\[!quot!\]/g,'&quot;')  ;
 				var header_els = ['<h2>', '</h2>'];//editor.config.editor.config.footnotesHeaderEls
                 if (editor.config.footnotesHeaderEls) {
                     header_els = editor.config.footnotesHeaderEls;
@@ -517,8 +517,8 @@
         
         generateMarkerHtml: function(prefix, citation_text, citation_text_modified, n, marker_ref, footnote_id, inline_citation) {
 			var the_html = '';
-			citation_text = citation_text.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]');
-			citation_text_modified = citation_text_modified.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]');
+			citation_text = citation_text.replace(/"/g,'[!quot!]').replace(/&quot;/g,'[!quot!]');
+			citation_text_modified = citation_text_modified.replace(/"/g,'[!quot!]').replace(/&quot;/g,'[!quot!]');
 			if (citation_text && !this.isValidHtml(citation_text)) {
 				console.error('Error generatingMarkerHtml, value for Citation ('+
 					citation_text+') is not valid html.');
@@ -530,7 +530,7 @@
 				return;
 			}
 			if (inline_citation) {
-				inline_citation = inline_citation.replace(/"/,'[!quot!]').replace('&quot;','[!quot!]');
+				inline_citation = inline_citation.replace(/"/g,'[!quot!]').replace(/&quot;/g,'[!quot!]');
 				if (inline_citation && !this.isValidHtml(inline_citation)) {
 					console.error('Error generatingMarkerHtml, value for In-text Citation ('+
 						inline_citation+') is not valid html.');
@@ -546,7 +546,7 @@
 						' data-citation-modified="'+citation_text_modified+'"' +
 						' data-inline-citation="'+
 						inline_citation+'" data-footnote-id="' + 
-						footnote_id + '">' + inline_citation.replace('[!quot!]','&quot;') + '</a><span class="inline-citation-after-link"></span>';
+						footnote_id + '">' + inline_citation.replace(/\[!quot!\]/g,'&quot;') + '</a><span class="inline-citation-after-link"></span>';
 				}
 				//else, split by opening anchor 
 				//	in 1st part, keep that to join at the end 
@@ -556,13 +556,13 @@
 				else {
 					var parts = inline_citation.split(/\[!a!\]/);
 					var parts_2 = parts[1].split(/\[\/!a!\]/);
-					the_html = '<span class="inline-citation-before-link">'+parts[0].replace('[!quot!]','&quot;') +'</span>' + '<a href="#footnote' + 
+					the_html = '<span class="inline-citation-before-link">'+parts[0].replace(/\[!quot!\]/g,'&quot;') +'</span>' + '<a href="#footnote' + 
 						prefix + '-' + footnote_id + '" id="footnote-marker' + prefix + '-' + footnote_id + '-' + marker_ref + 
 						'" data-citation="'+citation_text+'"'+
 						' data-citation-modified="'+citation_text_modified+'"' +
 						' data-inline-citation="'+inline_citation+
-						'" data-footnote-id="' + footnote_id + '">' + parts_2[0].replace('[!quot!]','&quot;')  + '</a>' + 
-						'<span class="inline-citation-after-link">'+(parts_2[1] ? parts_2[1] : '').replace('[!quot!]','&quot;') +'</span>';
+						'" data-footnote-id="' + footnote_id + '">' + parts_2[0].replace(/\[!quot!\]/g,'&quot;')  + '</a>' + 
+						'<span class="inline-citation-after-link">'+(parts_2[1] ? parts_2[1] : '').replace(/\[!quot!\]/g,'&quot;') +'</span>';
 				}
 			}
 			else {

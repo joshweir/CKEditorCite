@@ -844,10 +844,10 @@ describe('generateMarkerHtml', function() {
 				);
 			assert.equal(
 				'<span class="inline-citation-before-link"></span><a href="#footnote' + '1' + '-' + 'foo1' + '" id="footnote-marker' + '1' + '-' + 'foo1' + '-' + '3' +
-					'" data-citation="test &lt;strong&gt;citation&lt;/strong&gt;" data-citation-modified="test &lt;strong&gt;citation&lt;/strong&gt;" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
+					'" data-citation="test <strong>citation</strong>" data-citation-modified="test <strong>citation</strong>" data-inline-citation="inside&lt; anchor" data-footnote-id="' + 
 					'foo1' + '">inside&lt; anchor</a><span class="inline-citation-after-link"></span>',
 				CKEDITOR.instances.doc.plugins.cite.generateMarkerHtml(
-					1, 'test <strong>citation</strong>', 'test <strong>citation</strong>', 2, 3, 'foo1', 'inside< anchor')
+					1, 'test <strong>citation</strong>', 'test <strong>citation</strong>', 2, 3, 'foo1', 'inside&lt; anchor')
 				);
 		});
 	});
@@ -855,7 +855,7 @@ describe('generateMarkerHtml', function() {
 });
 
 
-/*
+
 describe('InText Citation Dialog', function() {
 	it('should open the dialog on double click of an inline citation', function() {
 		//todo: determine how to automate this test, cannot fire the doubleclick event:
@@ -899,8 +899,8 @@ describe('InText Citation Dialog', function() {
 								if (CKEDITOR.instances[key].element.$.className.match(/footnote_text/)) {
 									editor_found = true;
 									var $contents  = $(CKEDITOR.instances[key].editable().$);
-									assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
-									assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+									assert.equal($contents.html(), intext_citation_text.replace(/\[!quot!\]/g,'"') + '<br>');
+									assert.equal($('.intext-citation-preview').html(), intext_citation_text.replace(/\[!quot!\]/g,'"').replace('[!a!]','<a href="#">').replace('[/!a!]','</a>') + '<br>');
 									//CKEDITOR.instances[key].setData('');
 									var new_value = 'test change [!a!]link[/!a!] after link';
 									CKEDITOR.instances[key].setData(new_value);
@@ -908,7 +908,7 @@ describe('InText Citation Dialog', function() {
 									setTimeout(function(){
 										try {
 											var $contents  = $(CKEDITOR.instances[key].editable().$);
-											assert.notEqual($contents.html(), htmlEncode(intext_citation_text) + '<br>');
+											assert.notEqual($contents.html(), intext_citation_text.replace(/\[!quot!\]/g,'"') + '<br>');
 											CKEDITOR.instances[key].destroy();
 											CKEDITOR.dialog.getCurrent().hide();
 											done();
@@ -949,8 +949,8 @@ describe('InText Citation Dialog', function() {
 								if (CKEDITOR.instances[key].element.$.className.match(/footnote_text/)) {
 									editor_found = true;
 									var $contents  = $(CKEDITOR.instances[key].editable().$);
-									assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
-									assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+									assert.equal($contents.html(), intext_citation_text.replace(/\[!quot!\]/g,'"') + '<br>');
+									assert.equal($('.intext-citation-preview').html(), intext_citation_text.replace(/\[!quot!\]/g,'"').replace('[!a!]','<a href="#">').replace('[/!a!]','</a>') + '<br>');
 									var new_value = 'test change [!a!]link[/!a!] after link';
 									CKEDITOR.instances[key].setData(new_value);
 									CKEDITOR.instances[key].fire('change');
@@ -958,7 +958,7 @@ describe('InText Citation Dialog', function() {
 									setTimeout(function(){
 										try {
 											var $contents  = $(CKEDITOR.instances[key].editable().$);
-											assert.equal($contents.html(), htmlEncode('test change [!a!]link[/!a!] after link'));
+											assert.equal($contents.html(), 'test change [!a!]link[/!a!] after link');
 											assert.equal($('.intext-citation-preview').html(), 'test change <a href="#">link</a> after link');
 											CKEDITOR.instances[key].destroy();
 											CKEDITOR.dialog.getCurrent().hide();
@@ -1000,8 +1000,8 @@ describe('InText Citation Dialog', function() {
 								if (CKEDITOR.instances[key].element.$.className.match(/footnote_text/)) {
 									editor_found = true;
 									var $contents  = $(CKEDITOR.instances[key].editable().$);
-									assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
-									assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+									assert.equal($contents.html(), intext_citation_text.replace(/\[!quot!\]/g,'"') + '<br>');
+									assert.equal($('.intext-citation-preview').html(), intext_citation_text.replace(/\[!quot!\]/g,'"').replace('[!a!]','<a href="#">').replace('[/!a!]','</a>') + '<br>');
 									var new_value = 'test change link[/!a!] after link';
 									CKEDITOR.instances[key].setData(new_value);
 									CKEDITOR.instances[key].fire('change');
@@ -1051,8 +1051,8 @@ describe('InText Citation Dialog', function() {
 								if (CKEDITOR.instances[key].element.$.className.match(/footnote_text/)) {
 									editor_found = true;
 									var $contents  = $(CKEDITOR.instances[key].editable().$);
-									assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
-									assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+									assert.equal($contents.html(), intext_citation_text.replace(/\[!quot!\]/g,'"') + '<br>');
+									assert.equal($('.intext-citation-preview').html(), intext_citation_text.replace(/\[!quot!\]/g,'"').replace('[!a!]','<a href="#">').replace('[/!a!]','</a>') + '<br>');
 									assert.equal($('.intext-citation-validation').html(), '');
 									setTimeout(function(){
 										try {
@@ -1096,8 +1096,8 @@ describe('InText Citation Dialog', function() {
 								if (CKEDITOR.instances[key].element.$.className.match(/footnote_text/)) {
 									editor_found = true;
 									var $contents  = $(CKEDITOR.instances[key].editable().$);
-									assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
-									assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+									assert.equal($contents.html(), intext_citation_text.replace(/\[!quot!\]/g,'"') + '<br>');
+									assert.equal($('.intext-citation-preview').html(), intext_citation_text.replace(/\[!quot!\]/g,'"').replace('[!a!]','<a href="#">').replace('[/!a!]','</a>') + '<br>');
 									var new_value = 'test change link[!a!] after link';
 									CKEDITOR.instances[key].setData(new_value);
 									CKEDITOR.instances[key].fire('change');
@@ -1146,8 +1146,8 @@ describe('InText Citation Dialog', function() {
 								if (CKEDITOR.instances[key].element.$.className.match(/footnote_text/)) {
 									editor_found = true;
 									var $contents  = $(CKEDITOR.instances[key].editable().$);
-									assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
-									assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+									assert.equal($contents.html(), intext_citation_text.replace(/\[!quot!\]/g,'"') + '<br>');
+									assert.equal($('.intext-citation-preview').html(), intext_citation_text.replace(/\[!quot!\]/g,'"').replace('[!a!]','<a href="#">').replace('[/!a!]','</a>') + '<br>');
 									var new_value = 'test change link[!a!][/!a!] after link';
 									CKEDITOR.instances[key].setData(new_value);
 									CKEDITOR.instances[key].fire('change');
@@ -1197,8 +1197,8 @@ describe('InText Citation Dialog', function() {
 								if (CKEDITOR.instances[key2].element.$.className.match(/footnote_text/)) {
 									editor_found = true;
 									var $contents  = $(CKEDITOR.instances[key2].editable().$);
-									assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
-									assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+									assert.equal($contents.html(), intext_citation_text.replace(/\[!quot!\]/g,'"') + '<br>');
+									assert.equal($('.intext-citation-preview').html(), intext_citation_text.replace(/\[!quot!\]/g,'"').replace('[!a!]','<a href="#">').replace('[/!a!]','</a>') + '<br>');
 									var new_value = 'test change link[!a!][/!a!] after link';
 									CKEDITOR.instances[key2].setData(new_value);
 									CKEDITOR.instances[key2].fire('change');
@@ -1229,10 +1229,10 @@ describe('InText Citation Dialog', function() {
 	it('should update the intext citation text on ok, for only that inline citation it wont change the inline citation text of any other intext citations referencing the same citation', function(done) {
 		//insert some duplicates
 		CKEDITOR.instances.doc.plugins.cite.insert(
-			'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '<foo [!a!]"inside7[/!a!] bar>');
+			'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '&lt;foo [!a!]"inside7[/!a!] bar&gt;');
 		setTimeout(function(){
 			CKEDITOR.instances.doc.plugins.cite.insert(
-				'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '<foo [!a!]"inside7[/!a!] bar>');
+				'test <strong>custom footnote</strong> data7', CKEDITOR.instances.doc, '&lt;foo [!a!]"inside7[/!a!] bar&gt;');
 			var intext_citation_found = false;
 			for(var key in editor.widgets.instances) {
 				if (intext_citation_found) 
@@ -1254,8 +1254,8 @@ describe('InText Citation Dialog', function() {
 									if (CKEDITOR.instances[key2].element.$.className.match(/footnote_text/)) {
 										editor_found = true;
 										var $contents  = $(CKEDITOR.instances[key2].editable().$);
-										assert.equal($contents.html(), htmlEncode(intext_citation_text) + '<br>');
-										assert.equal($('.intext-citation-preview').html(), htmlEncode(intext_citation_text).replace('[!a!]','<a href="#">').replace('[/!a!]','</a>'));
+										assert.equal($contents.html(), intext_citation_text.replace(/\[!quot!\]/g,'"') + '<br>');
+										assert.equal($('.intext-citation-preview').html(), intext_citation_text.replace(/\[!quot!\]/g,'"').replace('[!a!]','<a href="#">').replace('[/!a!]','</a>') + '<br>');
 										var new_value = 'test< change [!a!]li&nk[/!a!] after >link';
 										CKEDITOR.instances[key2].setData(new_value);
 										CKEDITOR.instances[key2].fire('change');
@@ -1288,10 +1288,5 @@ describe('InText Citation Dialog', function() {
 		
 	});
 });
-*/
-function htmlEncode (value){
-  //create a in-memory div, set it's inner text(which jQuery automatically encodes)
-  //then grab the encoded contents back out.  The div never exists on the page.
-  return $('<div/>').text(value).html();
-}
+
 

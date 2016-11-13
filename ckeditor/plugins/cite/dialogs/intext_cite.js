@@ -104,19 +104,19 @@
                     config.on = {
                         instanceReady: function(evt) {
 							$(this.editable().$).css('margin','10px');
-							var intext_citation_text = $(editor.widgets.focused.element.$).attr('data-inline-citation');
+							var intext_citation_text = $(editor.widgets.focused.element.$).attr('data-inline-citation').replace(/\[!quot!\]/g,'&quot;');
 							if (!intext_citation_text) {
 								intext_citation_text = $(editor.widgets.focused.element.$).text();
-								intext_citation_text = '[!a!]' + intext_citation_text + '[/!a!]';
+								intext_citation_text = '[!a!]' + intext_citation_text.replace(/\[!quot!\]/g,'&quot;') + '[/!a!]';
 							}
 							this.insertHtml(intext_citation_text);
 							$('.intext-citation-preview').html(
-								$(this.editable().$).html().replace('[!a!]','<a href="#">')
+								$(this.editable().$).html().replace(/\[!quot!\]/g,'&quot;').replace('[!a!]','<a href="#">')
 									.replace('[/!a!]','</a>'));      
 						},
                         change: function(evt) {
 							$('.intext-citation-preview').html(
-								$(this.editable().$).html().replace('[!a!]','<a href="#">')
+								$(this.editable().$).html().replace(/\[!quot!\]/g,'&quot;').replace('[!a!]','<a href="#">')
 									.replace('[/!a!]','</a>'));      
 						}
                     };

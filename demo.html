@@ -43,10 +43,10 @@
 			var editor = CKEDITOR.replace("doc");
 		})();
 		$(document).ready(function(){
-			var citeplugin = CKEDITOR.instances.doc.plugins.cite;
 			$('.validation-message').text('');
 			$('form.insert-citation').on('submit', function(evt) {
 				evt.preventDefault();
+				var citeplugin = CKEDITOR.instances.doc.plugins.cite;
 				$('.validation-message').text('');
 				if (!citeplugin.isValidHtml($('input[name=citation]').val()))
 					$('.validation-message').text('Citation is not valid html.');
