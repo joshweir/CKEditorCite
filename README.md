@@ -33,6 +33,5 @@ Demo: `demo/demo.html`.
 
 4. Add the following to `ckeditor/config.js`: 
 
-      
-    config.plugins = 'dialogui,dialog,basicstyles,entities,wysiwygarea,fakeobjects,lineutils,widget,menu,contextmenu,floatpanel,panel,undo,cite';
-	config.extraAllowedContent = 'div h1 h2 h3 sup cite section b i strong span[data-*](*){*}';
+    `config.plugins = 'dialogui,dialog,basicstyles,entities,wysiwygarea,fakeobjects,lineutils,widget,menu,contextmenu,floatpanel,panel,undo,cite';`
+	`config.extraAllowedContent = 'div h1 h2 h3 sup cite section b i strong span[data-*](*){*}';`
