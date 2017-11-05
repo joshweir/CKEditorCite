@@ -17,8 +17,8 @@
 
     CKEDITOR.plugins.add('cite', {
 
-        requires: 'widget,contextmenu,wysiwygarea,dialogui,dialog,' + 
-				  'basicstyles,menu,contextmenu,floatpanel,panel',
+        requires: 'widget,contextmenu,wysiwygarea,dialogui,dialog,' +
+                  'basicstyles,menu,contextmenu,floatpanel,panel',
         icons: 'cite',
 
         // The plugin initialization logic goes inside this method.
@@ -377,6 +377,14 @@
             });
         },
 
+        getExternalIds: function() {
+            return _$contents
+                .find('.footnotes li[data-footnote-id][data-ext-id]')
+                .map(function(){
+                    return $(this).attr('data-ext-id');
+                }).toArray() || [];
+        },
+
         insert: function(footnote, inlineCitation, externalId) {
             this.setCursorBookmark();
             //var $contents = $(editor.editable().$);
@@ -458,7 +466,7 @@
                 (_inlineCitation ?
                     ' data-inline-citation="'+_inlineCitation+'"' :
                     '') +
-                (_externalId && _externalId.length ?
+                (_externalId && _externalId.toString().length ?
                     ' data-ext-id="'+_externalId+'"' :
                     '') + '>X</sup>' +
                 (_inlineCitation && !_adjacentInlineCitationRef ? ')' : '') +
@@ -703,7 +711,7 @@
             return '<li id="footnote' + prefix + '-' + footnoteId +
                 '" data-footnote-id="' + footnoteId + '"' +
                 (inlineCitation ? ' data-inline-citation="' + inlineCitation + '"' : '') +
-                (externalId && externalId.length ? ' data-ext-id="' + externalId + '"' : '') + '>' +
+                (externalId && externalId.toString().length ? ' data-ext-id="' + externalId + '"' : '') + '>' +
                 '<cite>' +
                 this.revertQuotesPlaceholder(footnoteText) + '</cite></li>';
         },
@@ -729,10 +737,19 @@
                     headerEls[0] + headerTitle + headerEls[1] +
                     '</header><ol>' + footnote + '</ol></section>';
                 // Move cursor to end of content:
+                /*
                 var range = _editor.createRange();
                 range.moveToElementEditEnd(range.root);
                 _editor.getSelection().selectRanges([range]);
                 _editor.insertHtml(container);
+                */
+                _$contents.append(container);
+                _$contents.find("section.footnotes").each(function(){
+                    if (!$(this).parent('.cke_widget_wrapper').length)
+                        _editor.widgets.initOn(
+                            new CKEDITOR.dom.element(this),
+                            'footnotes' );
+                });
             } else {
                 if (replace)
                     $footnotes.find('ol').html(footnote);
@@ -1068,7 +1085,7 @@
                     ' data-inline-citation="'+
                     inlineCitation+'" data-footnote-id="' +
                     footnoteId + '"'+
-                    (externalId && externalId.length ? ' data-ext-id="'+externalId+'"'  : '') +
+                    (externalId && externalId.toString().length ? ' data-ext-id="'+externalId+'"'  : '') +
                     '>' +
                     this.revertQuotesPlaceholder(inlineCitation) +
                     '</a><span class="inline-citation-after-link"></span>';
@@ -1080,7 +1097,7 @@
                     '" data-citation="'+citationText+'"'+
                     ' data-citation-modified="'+citationTextModified+'"' +
                     ' data-footnote-id="' + footnoteId + '"'+
-                    (externalId && externalId.length ? ' data-ext-id="'+externalId+'"'  : '') +
+                    (externalId && externalId.toString().length ? ' data-ext-id="'+externalId+'"'  : '') +
                     '>' + n + '</a>';
             }
             return theHtml;
