@@ -1,4 +1,4 @@
-CKEditor Cite Add On
+CKEditor Cite Plugin
 ====================
 
 Adapted from the [CKEditor Footnotes Plugin](https://github.com/andykirk/CKEditorFootnotes), extending the additional functionality which is:
@@ -13,7 +13,7 @@ Adapted from the [CKEditor Footnotes Plugin](https://github.com/andykirk/CKEdito
 
 The existing [CKEditor Footnotes Plugin](https://github.com/andykirk/CKEditorFootnotes) auto numbers the intext footnote markers (eg: <a>[1]</a>), this plugin offers the following additional functionality:
 
-1. Allows for footnote markers to be customized to confirm to academic journal in-text citation standards, for example instead of [[1]](#) we could create a marker that looks like this: Laemmli [1970](#).
+1. Allows for footnote markers to be customized to confirm to academic journal in-text citation standards, for example instead of **[1]** we could create a marker that looks like this: **Laemmli 1970**.
 
 2. In-text citations can be edited, multiple markers citing the same reference, could have different marker text/anchors.
 
@@ -21,11 +21,11 @@ The existing [CKEditor Footnotes Plugin](https://github.com/andykirk/CKEditorFoo
 
 4. Adjacent In-text citations are automatically grouped together. eg. [1, 2]
 
-Check out `demo.html` which presents the functionality in a nutshell.
+Demo: `demo/demo.html`.
 
 ## Installation
 
-1. Clone this repo and run `demo.html`; or
+1. Clone this repo and run `demo/demo.html`; or
 
 2. Copy the `ckeditor/plugins/cite` directory to your ckeditor plugins folder, add `cite` to the `config.plugins` variable in `ckeditor/config.js`.
 
