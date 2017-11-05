@@ -25,13 +25,12 @@ Demo: `demo/demo.html`.
 
 ## Installation
 
-1. Clone this repo and run `demo/demo.html`; or
+Clone this repo and run `demo/demo.html`; or
 
-2. Copy the `ckeditor/plugins/cite` directory to your ckeditor plugins folder, add `cite` to the `config.plugins` variable in `ckeditor/config.js`.
+Copy the `ckeditor/plugins/cite` directory to your ckeditor plugins folder, add `cite` to the `config.plugins` variable in `ckeditor/config.js`.
+Add the following to `ckeditor/config.js`: 
 
-3. The Cite Plugin uses custom styles found in `styles/plugin.css`. These styles are automatically loaded when using the traditional iframe-based CKEditor. However, if you are using Inline mode, you need to add this stylesheet to the `<head>` section of any html pages that use the Inline editor.
+    config.plugins = 'dialogui,dialog,basicstyles,entities,wysiwygarea,fakeobjects,lineutils,widget,menu,contextmenu,floatpanel,panel,undo,cite';`
+	config.extraAllowedContent = 'div h1 h2 h3 sup cite section b i strong span[data-*](*){*}';`
 
-4. Add the following to `ckeditor/config.js`: 
-
-    `config.plugins = 'dialogui,dialog,basicstyles,entities,wysiwygarea,fakeobjects,lineutils,widget,menu,contextmenu,floatpanel,panel,undo,cite';`
-	`config.extraAllowedContent = 'div h1 h2 h3 sup cite section b i strong span[data-*](*){*}';`
+The Cite Plugin uses custom styles found in `styles/plugin.css`. These styles are automatically loaded when using the traditional iframe-based CKEditor. However, if you are using Inline mode, you need to add this stylesheet to the `<head>` section of any html pages that use the Inline editor.
