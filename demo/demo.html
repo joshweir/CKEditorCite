@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CKEditor Cite Plugin Demo</title>
+  </head>
+  <body>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+	<script src="ckeditor/ckeditor.js"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.7.3/ckeditor.js"></script>-->
+    <link rel="stylesheet" href="ckeditor/samples/toolbarconfigurator/lib/codemirror/neo.css">
+    <div>
+		<h1>CKEditor Cite Plugin</h1>
+		<div>
+			<p>Adapted from the <a href="https://github.com/andykirk/CKEditorFootnotes" target="_blank">CKEditor Footnotes Plugin</a></p>
+			<ol>
+			  <li>Insert CKEditor citation, can specify an <strong>In-text Citation</strong> according to Journal standards like: <i>Johnston et al. 2009</i>.</li>
+			  <li>If the <strong>In-text Citation</strong> is left blank, the citation marker will be auto numbered eg: <i>[1]</i>.</li>
+			  <li>If a citation is inserted adjacent to another citation, they will be automatically grouped eg: <i>[1, 2]</i></li>
+			  <li><strong>Double click / right click > Edit In-text Citation</strong> to edit the in-text citation marker.</li>
+			  <li>Click the Toolbar <strong>Insert Citation</strong> button to insert a citation within CKEditor.</li>
+			</ol>
+		</div>
+		<form class="demo-insert-citation">
+			<div>
+			  <label style="display: inline-block; width: 300px;">
+				In-text Citation <small>(optional, auto number if blank)</small>: 
+			  </label>
+			  <input style="width:50%;" name="inline-citation" 
+					 class="inline-citation" placeholder="Johnston et al. 2009" 
+					 value="Johnston et al. 2009">
+			</div>
+			<div>
+			  <label style="display: inline-block; width: 300px;">Citation: </label>
+			  <input style="width:50%;" name="citation" class="citation"
+					 placeholder="Johnston, E. L., Piola, R. F., &amp;amp; Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg."
+					 value="Johnston, E. L., Piola, R. F., &amp;amp; Clark, G. F. (2009). The role of propagule pressure in invasion success. In &lt;i&gt;Biological invasions in marine ecosystems&lt;/i&gt; (pp. 133-151). Springer Berlin Heidelberg.">
+			</div>
+			<div>
+			  <label style="display: inline-block; width: 300px;">External Identifier: </label>
+			  <input style="width:50%;" name="external_id" class="citation"
+					 placeholder="123"
+					 value="">
+			</div>
+			<input type="submit" value="Insert Citation at Cursor">
+		</form>
+		<div style="color: red;" class="validation-message"></div>
+	</div>
+    <div id="ckeditor-container">
+		<textarea class="form-control" name="doc"></textarea>
+	</div>
+	<script>
+		;(function(){
+			if (typeof CKEDITOR !== 'undefined') {
+				var ckeditorPlugins = ['cite'], 
+					ckeditorLocalDir = '/home/resrev/CKEditorCite/demo/ckeditor/',
+					ckeditorPluginsLocation = ckeditorLocalDir + 'plugins/',
+					ckeditorOptions = {
+						customConfig: ckeditorLocalDir + 'config.js',
+						contentsCss: ckeditorLocalDir + 'contents.css',
+						stylesSet: ckeditorLocalDir + 'styles.js'
+					};
+				for (var i = 0; i < ckeditorPlugins.length; i++)
+					CKEDITOR.plugins.addExternal(ckeditorPlugins[i],
+						ckeditorPluginsLocation + ckeditorPlugins[i] + '/',
+						'plugin.js');
+				//CKEDITOR.replace('editor1', ckeditorOptions);
+				//var editorElem = document.getElementById("ckeditor-container");
+				var editor = CKEDITOR.replace("doc", ckeditorOptions);
+				
+				//var editor = CKEDITOR.replace("doc"/*, ckeditorOptions*/);
+			}
+		})();
+		$(document).ready(function(){
+			$('.validation-message').text('');
+			$('form.demo-insert-citation').on('submit', function(evt) {
+				evt.preventDefault();
+				var citeplugin = CKEDITOR.instances.doc.plugins.cite;
+				$('.validation-message').text('');
+				citeplugin.insert(
+					$('input[name=citation]').val(), 
+					$('input[name=inline-citation]').val(), 
+					$('input[name=external_id]').val());
+			});
+		});
+	</script>
+
+  </body>
+</html>
