@@ -411,7 +411,8 @@
             $(_cursorAfterWidgetHtml).insertAfter(
                 _$contents
                     .find('sup[data-footnote-id]:contains(X)')
-                    .parent('span'));
+                    .closest('[data-inline-cit'+
+                        (inlineCitation ? '' : 'autonum')+']'));
             this.reorderMarkers('build');
             //select after the inserted marker widget
             this.moveCursorAfterFocusedWidget();
