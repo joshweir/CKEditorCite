@@ -504,8 +504,17 @@
             else if (_adjacentInlineCitationAutonumRef)
                 this.insertInlineCitationAutonumWithinAdjacentGroup();
             else {
+                var self = this;
+                _$contents.find(_bookmarkSelector).each(function(){
+                    var $this = $(this);
+                    $this.replaceWith(
+                        _footnoteMarker +
+                        self.getHtmlWithoutWidgetMarkup(
+                            $this[0].outerHTML)
+                    );
+                    return false;
+                });
                 this.moveCursorToCursorBookmark();
-                _editor.insertHtml(_footnoteMarker);
             }
             _$contents.find("sup[data-footnote-id]").each(function(){
                 if (!$(this).parent('.cke_widget_wrapper').length)
