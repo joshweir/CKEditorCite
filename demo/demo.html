@@ -23,10 +23,10 @@
 		<form class="demo-insert-citation">
 			<div>
 			  <label style="display: inline-block; width: 300px;">
-				In-text Citation <small>(optional, auto number if blank)</small>: 
+				In-text Citation <small>(optional, auto number if blank)</small>:
 			  </label>
-			  <input style="width:50%;" name="inline-citation" 
-					 class="inline-citation" placeholder="Johnston et al. 2009" 
+			  <input style="width:50%;" name="inline-citation"
+					 class="inline-citation" placeholder="Johnston et al. 2009"
 					 value="Johnston et al. 2009">
 			</div>
 			<div>
@@ -51,34 +51,33 @@
 	<script>
 		;(function(){
 			if (typeof CKEDITOR !== 'undefined') {
-				var ckeditorPlugins = ['cite'], 
-					ckeditorLocalDir = '/home/resrev/CKEditorCite/demo/ckeditor/',
-					ckeditorPluginsLocation = ckeditorLocalDir + 'plugins/',
-					ckeditorOptions = {
-						customConfig: ckeditorLocalDir + 'config.js',
-						contentsCss: ckeditorLocalDir + 'contents.css',
-						stylesSet: ckeditorLocalDir + 'styles.js'
-					};
+				var ckeditorPlugins = ['cite'],
+  					ckeditorLocalDir = '',
+  					ckeditorPluginsLocation = ckeditorLocalDir + 'plugins/',
+  					ckeditorOptions = {
+  						customConfig: ckeditorLocalDir + 'config.js',
+  						contentsCss: ckeditorLocalDir + 'ckeditor/contents.css',
+  						stylesSet: ckeditorLocalDir + 'ckeditor/styles.js'
+  					};
 				for (var i = 0; i < ckeditorPlugins.length; i++)
 					CKEDITOR.plugins.addExternal(ckeditorPlugins[i],
 						ckeditorPluginsLocation + ckeditorPlugins[i] + '/',
 						'plugin.js');
-				//CKEDITOR.replace('editor1', ckeditorOptions);
-				//var editorElem = document.getElementById("ckeditor-container");
 				var editor = CKEDITOR.replace("doc", ckeditorOptions);
-				
-				//var editor = CKEDITOR.replace("doc"/*, ckeditorOptions*/);
 			}
 		})();
 		$(document).ready(function(){
 			$('.validation-message').text('');
+      setTimeout(function() {
+        CKEDITOR.instances.doc.focus();
+      }, 300);
 			$('form.demo-insert-citation').on('submit', function(evt) {
 				evt.preventDefault();
 				var citeplugin = CKEDITOR.instances.doc.plugins.cite;
 				$('.validation-message').text('');
 				citeplugin.insert(
-					$('input[name=citation]').val(), 
-					$('input[name=inline-citation]').val(), 
+					$('input[name=citation]').val(),
+					$('input[name=inline-citation]').val(),
 					$('input[name=external_id]').val());
 			});
 		});

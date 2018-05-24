@@ -53,7 +53,8 @@
                         element.hasClass('footnotes');
                 },
                 editables: this.retrieveFootnotesWidgetEditableElements(
-                    $('<div>' + _editor.element.$.textContent + '</div>'))
+                    $('<div>' + _editor.element.$.textContent + '</div>')),
+                draggable: false
             });
 
             // Register the inline citation widget.
@@ -64,7 +65,8 @@
                 upcast: function(element) {
                     return element.name === 'sup' &&
                         element.attributes['data-footnote-id'] != 'undefined';
-                }
+                },
+                draggable: false
             });
         },
 
@@ -313,6 +315,8 @@
                     this.updateInlineCitationsByExternalId(citationUpdates[i]);
                 }
             }
+            if (citationUpdates.length)
+                this.updateInlineCitationBrackets(citationUpdates);
             this.reorderMarkers('build');
             _editor.focus();
         },
@@ -377,6 +381,57 @@
             });
         },
 
+        updateInlineCitationBrackets: function(citationUpdates) {
+            if (citationUpdates[0]['inlineCitation'].toString().length) {
+                _$contents.find('[data-inline-cit-autonum]').each(function(){
+                    var $outer = $(this);
+                    $outer.contents().each(function(){
+                        var $this = $(this);
+                        if (!$this.is('[data-footnote-id]') &&
+                            !$this.is('[data-widget]') &&
+                            !$this.hasClass('cke_widget_wrapper')) {
+                            $this[0].nodeType == 3 ?
+                                $this[0].textContent =
+                                    $this[0].textContent
+                                        .replace('[','(')
+                                        .replace(']',')') :
+                                $this.html(
+                                    $this.html()
+                                        .replace('[','(')
+                                        .replace(']',')'));
+                        }
+                    });
+                    $outer.attr('data-inline-cit',
+                        $outer.attr('data-inline-cit-autonum'));
+                    $outer.removeAttr('data-inline-cit-autonum');
+                });
+            }
+            else {
+                _$contents.find('[data-inline-cit]').each(function(){
+                    var $outer = $(this);
+                    $outer.contents().each(function(){
+                        var $this = $(this);
+                        if (!$this.is('[data-footnote-id]') &&
+                            !$this.is('[data-widget]') &&
+                            !$this.hasClass('cke_widget_wrapper')) {
+                            $this[0].nodeType == 3 ?
+                                $this[0].textContent =
+                                    $this[0].textContent
+                                        .replace('(','[')
+                                        .replace(')',']') :
+                                $this.html(
+                                    $this.html()
+                                        .replace('(','[')
+                                        .replace(')',']'));
+                        }
+                    });
+                    $outer.attr('data-inline-cit-autonum',
+                        $outer.attr('data-inline-cit'));
+                    $outer.removeAttr('data-inline-cit');
+                });
+            }
+        },
+
         getExternalIds: function() {
             return _$contents
                 .find('.footnotes li[data-footnote-id][data-ext-id]')
@@ -414,7 +469,7 @@
                     .closest('[data-inline-cit'+
                         (inlineCitation ? '' : 'autonum')+']'));
             this.reorderMarkers('build');
-            //select after the inserted marker widget
+            //select after the inserted marker widget s
             this.moveCursorAfterFocusedWidget();
             _editor.focus();
         },
@@ -504,6 +559,8 @@
             else if (_adjacentInlineCitationAutonumRef)
                 this.insertInlineCitationAutonumWithinAdjacentGroup();
             else {
+                //this.moveCursorToCursorBookmark();
+                //_editor.insertHtml(_footnoteMarker);
                 var self = this;
                 _$contents.find(_bookmarkSelector).each(function(){
                     var $this = $(this);
@@ -1088,8 +1145,8 @@
             var theHtml = '';
             if (inlineCitation) {
                 inlineCitation = this.removeOuterBrackets(inlineCitation);
-                theHtml = '<span class="inline-citation-before-link"></span><a href="#footnote' + prefix +
-                    '-' + footnoteId + '" id="footnote-marker' + prefix + '-' + footnoteId + '-' + markerRef +
+                theHtml = '<span class="inline-citation-before-link"></span><span ' +
+                    'id="footnote-marker' + prefix + '-' + footnoteId + '-' + markerRef +
                     '" data-citation="'+citationText+'"'+
                     ' data-citation-modified="'+citationTextModified+'"' +
                     ' data-inline-citation="'+
@@ -1098,17 +1155,16 @@
                     (externalId && externalId.toString().length ? ' data-ext-id="'+externalId+'"'  : '') +
                     '>' +
                     this.revertQuotesPlaceholder(inlineCitation) +
-                    '</a><span class="inline-citation-after-link"></span>';
+                    '</span><span class="inline-citation-after-link"></span>';
             }
             else {
-                theHtml = '<a href="#footnote' + prefix + '-' + footnoteId +
-                    '" id="footnote-marker' + prefix + '-' +
+                theHtml = '<span id="footnote-marker' + prefix + '-' +
                     footnoteId + '-' + markerRef +
                     '" data-citation="'+citationText+'"'+
                     ' data-citation-modified="'+citationTextModified+'"' +
                     ' data-footnote-id="' + footnoteId + '"'+
                     (externalId && externalId.toString().length ? ' data-ext-id="'+externalId+'"'  : '') +
-                    '>' + n + '</a>';
+                    '>' + n + '</span>';
             }
             return theHtml;
         },
