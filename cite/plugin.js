@@ -30,7 +30,7 @@
                 return false;
             }
             // Allow `cite` to be editable:
-            CKEDITOR.dtd.$editable['cite'] = 1;
+            CKEDITOR.dtd.$editable['span'] = 1;
             _editor = editor;
             _editor.addContentsCss(this.path + 'styles/plugin.css');
             this.initWidgets();
@@ -60,10 +60,10 @@
             // Register the inline citation widget.
             _editor.widgets.add('footnotemarker', {
                 // Minimum HTML which is required by this widget to work.
-                requiredContent: 'sup[data-footnote-id]',
+                requiredContent: 'span[data-citation]',
                 // Check the elements that need to be converted to widgets.
                 upcast: function(element) {
-                    return element.name === 'sup' &&
+                    return element.classes.indexOf('sup') > -1 &&
                         element.attributes['data-footnote-id'] != 'undefined';
                 },
                 draggable: false
@@ -74,7 +74,7 @@
             var def = {
                     header: {
                         selector: 'header > *',
-                        allowedContent: 'span[*](*); strong em sub sup;'
+                        allowedContent: 'span[*](*); strong em sub sup;div[*](sup)'
                     }
                 },
                 i = 1,
@@ -83,7 +83,7 @@
             contents.find('.footnotes li').each(function(){
                 def['footnote_' + i] = {
                     selector: '#footnote' + prefix + '-' +
-                    $(this).attr('data-footnote-id') + ' cite',
+                    $(this).attr('data-footnote-id') + ' .cite',
                     allowedContent: 'a[href]; cite[*](*); span[*](*); strong em br i'
                 };
                 i++;
@@ -94,13 +94,13 @@
         addWidgetCommandsButtonsAndDialogs: function() {
             // Define editor commands that open our dialogs
             _editor.addCommand('cite', new CKEDITOR.dialogCommand('citeDialog', {
-                allowedContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]',
-                requiredContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]'
+                allowedContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*];div[*](sup)',
+                requiredContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*];div[*](sup)'
             }));
 
             _editor.addCommand('intext_cite', new CKEDITOR.dialogCommand('intextCiteDialog', {
-                allowedContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]',
-                requiredContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*]'
+                allowedContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*];div[*](sup)',
+                requiredContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*];div[*](sup)'
             }));
 
             // Create a toolbar button that executes the above command.
@@ -206,10 +206,10 @@
                 //get the current footnotes section header
                 var $footnotesHeader =
                     _$contents.find('.footnotes header h2').html();
-                _$contents.find('.footnotes li cite').each(function(){
+                _$contents.find('.footnotes li .cite').each(function(){
                     var $cite = $(this);
                     var footnoteId = $(this).parent('li').attr('data-footnote-id');
-                    _$contents.find('sup[data-footnote-id='+ footnoteId +']').each(function(){
+                    _$contents.find('.sup[data-footnote-id='+ footnoteId +']').each(function(){
                         $(this).attr('data-citation-modified',
                             self.replaceQuotesWithPlaceholder($cite.html()));
                         if ($footnotesHeader)
@@ -225,7 +225,7 @@
             _editor.on('doubleclick', function(ev) {
                 var el = _editor.getSelection().getStartElement();
                 if (el.getName()==='span' &&
-                    el.find('sup[data-footnote-id]')) {
+                    el.find('.sup[data-footnote-id]')) {
                     _editor.execCommand('intext_cite');
                 }
             });
@@ -246,7 +246,7 @@
                         var ascendant = element.getAscendant( function( el ) {
                             try {
                                 return el.getName() === 'span' &&
-                                    el.find('sup[data-footnote-id]');
+                                    el.find('.sup[data-footnote-id]');
                             }
                             catch(e) {
                                 return null;
@@ -342,14 +342,14 @@
                                 self.replaceDivWithSpan(
                                     citationData['inlineCitation'])))) :
                     $this.removeAttr('data-inline-citation');
-                $this.find('cite').html(
+                $this.find('.cite').html(
                     self.replaceDivWithSpan(citationData['citation']));
             });
         },
 
         updateInlineCitationsByExternalId: function(citationData) {
             var self = this;
-            _$contents.find('sup[data-footnote-id][data-ext-id='+
+            _$contents.find('.sup[data-footnote-id][data-ext-id='+
                 citationData['externalId']+']').each(function(){
                 var $this = $(this);
                 var $anchor = $this.find('a');
@@ -465,7 +465,7 @@
             //allowing the user to continue typing after insert
             $(_cursorAfterWidgetHtml).insertAfter(
                 _$contents
-                    .find('sup[data-footnote-id]:contains(X)')
+                    .find('.sup[data-footnote-id]:contains(X)')
                     .closest('[data-inline-cit'+
                         (inlineCitation ? '' : 'autonum')+']'));
             this.reorderMarkers('build');
@@ -515,7 +515,7 @@
                 !_adjacentInlineCitationRef ? '(' : '') +
                 (!_inlineCitation &&
                 !_adjacentInlineCitationAutonumRef ? '[' : '') +
-                '<sup data-citation="'+_footnote+
+                '<span class="sup" data-citation="'+_footnote+
                 '" data-footnote-id="' + _footnoteId +
                 '"'+
                 ' data-citation-modified="'+_footnote+'"' +
@@ -524,7 +524,7 @@
                     '') +
                 (_externalId && _externalId.toString().length ?
                     ' data-ext-id="'+_externalId+'"' :
-                    '') + '>X</sup>' +
+                    '') + '>X</span>' +
                 (_inlineCitation && !_adjacentInlineCitationRef ? ')' : '') +
                 (!_inlineCitation && !_adjacentInlineCitationAutonumRef ? ']' : '') +
                 (_inlineCitation && !_adjacentInlineCitationRef ? '</span>' : '') +
@@ -573,7 +573,7 @@
                 });
                 this.moveCursorToCursorBookmark();
             }
-            _$contents.find("sup[data-footnote-id]").each(function(){
+            _$contents.find(".sup[data-footnote-id]").each(function(){
                 if (!$(this).parent('.cke_widget_wrapper').length)
                     _editor.widgets.initOn(
                         new CKEDITOR.dom.element(this),
@@ -590,7 +590,7 @@
                     $('<div>' + _inlineCitation + '</div>').text();
             _$contents
                 .find('[data-inline-cit='+_adjacentInlineCitationRef+
-                    '] sup[data-footnote-id]')
+                    '] .sup[data-footnote-id]')
                 .each(function() {
                     var existingInlineCitationText =
                         $('<div>' + $(this).attr('data-inline-citation') + '</div>').text();
@@ -616,7 +616,7 @@
                 $newFootnote = $(_footnoteMarker);
             _$contents
                 .find('[data-inline-cit-autonum='+_adjacentInlineCitationAutonumRef+
-                    '] sup[data-footnote-id]')
+                    '] .sup[data-footnote-id]')
                 .each(function() {
                     inlineCitationsOrdered.push(this);
                 });
@@ -633,11 +633,11 @@
         updateInlineCitationDataAttrs: function() {
             this.removeDuplicatedDataInlineCitAttributes();
             _$contents = $(_editor.editable().$);
-            _$contents.find('sup[data-footnote-id]:contains(X)')
+            _$contents.find('.sup[data-footnote-id]:contains(X)')
                 .attr('data-citation', _footnote)
                 .attr('data-citation-modified', _footnote);
             if (_inlineCitation)
-                _$contents.find('sup[data-footnote-id]:contains(X)')
+                _$contents.find('.sup[data-footnote-id]:contains(X)')
                     .attr('data-inline-citation', _inlineCitation);
         },
 
@@ -779,8 +779,8 @@
                 '" data-footnote-id="' + footnoteId + '"' +
                 (inlineCitation ? ' data-inline-citation="' + inlineCitation + '"' : '') +
                 (externalId && externalId.toString().length ? ' data-ext-id="' + externalId + '"' : '') + '>' +
-                '<cite>' +
-                this.revertQuotesPlaceholder(footnoteText) + '</cite></li>';
+                '<span class="cite">' +
+                this.revertQuotesPlaceholder(footnoteText) + '</span></li>';
         },
 
         addFootnote: function(footnote, replace) {
@@ -790,7 +790,7 @@
                 var headerTitle = _editor.config.footnotesTitle ?
                     _editor.config.footnotesTitle : 'References';
                 var dataHeaderTitle =
-                    _$contents.find('sup[data-footnotes-heading]')
+                    _$contents.find('.sup[data-footnotes-heading]')
                         .attr('data-footnotes-heading');
                 headerTitle =
                     this.revertQuotesPlaceholder(
@@ -849,7 +849,7 @@
             };
             var self = this;
             // Find all the markers in the document:
-            var $markers = _$contents.find('sup[data-footnote-id]');
+            var $markers = _$contents.find('.sup[data-footnote-id]');
             // If there aren't any, remove the Footnotes container:
             if ($markers.length == 0) {
                 _$contents.find('.footnotes').parent().remove();
@@ -928,7 +928,7 @@
                     footnoteId = $(this).attr('data-footnote-id');
                     footnoteWidget.initEditable(
                         'footnote_' + i,
-                        {selector: '#footnote' + prefix + '-' + footnoteId +' cite',
+                        {selector: '#footnote' + prefix + '-' + footnoteId +' .cite',
                             allowedContent: 'a[href]; cite[*](*); span[*](*); em strong i'});
                     i++;
                 });
@@ -939,7 +939,7 @@
         removeDataInlineCitElsThatArentMarkers: function() {
             _$contents.find('[data-inline-cit]').each(function(){
                 var $this = $(this);
-                if (!$this.find('sup[data-footnote-id]').length)
+                if (!$this.find('.sup[data-footnote-id]').length)
                     $this.replaceWith($this.html());
             });
         },
