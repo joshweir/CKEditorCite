@@ -51,7 +51,7 @@
   var replaceDivWithSpan = function (text) {
     return renameDOMElementInStr('span', 'div', text);
   };
-  
+
   var _editor, _$contents, _footnote, _inlineCitation,
       _adjacentInlineCitationRef, _adjacentInlineCitationAutonumRef,
       _footnoteId, _footnoteMarker, _externalId,
@@ -275,8 +275,8 @@
     invokeIntextCiteDialogOnDoubleClick: function() {
         _editor.on('doubleclick', function(ev) {
             var el = _editor.getSelection().getStartElement();
-            if (el.getName()==='span' &&
-                el.find('.sup[data-footnote-id]')) {
+            if (el.hasClass('cke_widget_focused') &&
+                el.find('.sup[data-footnote-id]').$.length) {
                 _editor.execCommand('intext_cite');
             }
         });
@@ -296,8 +296,8 @@
                     //check element is sup[data-footnote-id]
                     var ascendant = element.getAscendant( function( el ) {
                         try {
-                            return el.getName() === 'span' &&
-                                el.find('.sup[data-footnote-id]');
+                            return el.hasClass('cke_widget_focused') &&
+                                el.find('.sup[data-footnote-id]').$.length;
                         }
                         catch(e) {
                             return null;
