@@ -1,8 +1,11 @@
+import { compose, curry } from 'ramda';
+
 ;(function($) {
   'use strict';
 
   //TODO: use webpack, replace functional utilities with lodash equivelant
   //functional utilities
+  /*
   var compose = function compose() {
     for (var _len = arguments.length, fns = Array(_len), _key = 0; _key < _len; _key++) {
       fns[_key] = arguments[_key];
@@ -16,7 +19,8 @@
       return value;
     });
   };
-
+  */
+  /*
   var curry = function curry(fn) {
     return function cf() {
       for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
@@ -32,6 +36,7 @@
       };
     };
   };
+  */
 
   //functional string utilities
   var replace = function (to, from, str) { return str.replace(from, to); };

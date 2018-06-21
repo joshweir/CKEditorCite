@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.tmp
+.idea
+public
+compiled
+*.swp
+.vscode
+.nyc_output/
+coverage/
+yarn-error.log
+__snapshots__/
