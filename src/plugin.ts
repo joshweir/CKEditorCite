@@ -1,5 +1,14 @@
 import { compose, curry } from 'ramda';
 
+class Pickle {
+  colorChange(event: string): void {
+    this.ahhh = event;
+    debugger;
+  }
+}
+let pickle = new Pickle();
+pickle.colorChange('ahhh');
+
 ;(function($) {
   'use strict';
 
