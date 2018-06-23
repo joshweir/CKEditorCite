@@ -1,8 +1,5 @@
 const path = require('path');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const postcssImport = require('postcss-import');
-const postcssCssnext = require('postcss-cssnext');
-const postcssReporter = require('postcss-reporter');
 const PATHS = require('../paths');
 
 module.exports = ({ production = false, browser = false } = {}) => {
@@ -23,6 +20,51 @@ module.exports = ({ production = false, browser = false } = {}) => {
    * css-loader/locals instead of style-loader!css-loader in the prerendering bundle.
    * It doesn't embed CSS but only exports the identifier mappings.
    */
+  const createCssLoaders = embedCssInBundle => ([
+    {
+      loader: embedCssInBundle ? 'css-loader' : 'css-loader/locals'
+    }
+  ]);
+
+  const createBrowserLoaders = extractCssToFile => loaders => {
+    if (extractCssToFile) {
+      return ExtractTextPlugin.extract({
+        fallback: 'style-loader',
+        use: loaders
+      });
+    }
+    return [{ loader: 'style-loader' }, ...loaders];
+  };
+
+  const serverLoaders = createCssLoaders(false);
+  const browserLoaders = createBrowserLoaders(production)(createCssLoaders(true));
+
+  return {
+    test: /\.css$/,
+    use: [
+      'style-loader',
+      {
+        loader: 'typings-for-css-modules-loader',
+        options: {
+          modules: true,
+          namedExport: true
+        }
+      }
+    ],
+    include: PATHS.srcstyles
+  };
+};
+
+
+/*
+const path = require('path');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const postcssImport = require('postcss-import');
+const postcssCssnext = require('postcss-cssnext');
+const postcssReporter = require('postcss-reporter');
+const PATHS = require('../paths');
+
+module.exports = ({ production = false, browser = false } = {}) => {
   const localIdentName = 'localIdentName=[name]__[local]___[hash:base64:5]';
 
   const createCssLoaders = embedCssInBundle => ([
@@ -53,6 +95,7 @@ module.exports = ({ production = false, browser = false } = {}) => {
   return {
     test: /\.css$/,
     use: browser ? browserLoaders : serverLoaders,
-    include: PATHS.app
+    include: PATHS.srcstyles
   };
 };
+*/

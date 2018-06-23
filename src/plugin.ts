@@ -1,15 +1,20 @@
 import { compose, curry } from 'ramda';
+//import * as pluginStyles from './styles/plugin.css';
+import foo from './styles/test.js';
+console.log(foo.foo);
+declare var CKEDITOR: any;
+declare var jQuery: any;
 
 class Pickle {
+  private ahhh;
   colorChange(event: string): void {
     this.ahhh = event;
-    debugger;
   }
 }
 let pickle = new Pickle();
 pickle.colorChange('ahhh');
 
-;(function($) {
+;(function(CKEDITOR, $) {
   'use strict';
 
   //TODO: use webpack, replace functional utilities with lodash equivelant
@@ -78,7 +83,7 @@ pickle.colorChange('ahhh');
       _cursorAfterWidgetHtml = '<span class="'+ _cursorAfterWidgetClass +
           '">&nbsp;</span>';
 
-  jQuery.fn.reverse = [].reverse;
+  jQuery.fn.reverse = [].reverse; 
 
   CKEDITOR.plugins.add('cite', {
 
@@ -90,7 +95,7 @@ pickle.colorChange('ahhh');
     init: function(editor) {
         // Check for jQuery
         // @TODO - remove if/when JQ dep. is removed.
-        if (typeof(window.jQuery) == 'undefined') {
+        if (typeof(jQuery) == 'undefined') {
             console.warn('jQuery required but undetected so quitting cite.');
             return false;
         }
@@ -224,7 +229,7 @@ pickle.colorChange('ahhh');
         _editor.on('change', function(evt) {
             clearTimeout(wto);
             wto = setTimeout(function() {
-                var now = (new Date()).getTime();
+                var now = (new Date()).getTime().toString();
                 //set a locally stored timestamp to prevent an endless loop when reordering markers below..
                 if(!localStorage.getItem(_reorderMarkersTsKey))
                     localStorage
@@ -238,7 +243,7 @@ pickle.colorChange('ahhh');
                 if (self.editingAFootnote(evt))
                     return;
 
-                if(localStorage.getItem(_reorderMarkersTsKey) == now) {
+                if(localStorage.getItem(_reorderMarkersTsKey) === now) {
                     // SetTimeout seems to be necessary (it's used in the core but can't be 100% sure why)
                     setTimeout(function(){
                         self.reorderMarkers('change');
@@ -764,7 +769,12 @@ pickle.colorChange('ahhh');
     },
 
     getSiblingsEitherSideOfCursor: function(inlineCitAttr) {
-        var siblings = {};
+        var siblings = {
+          nextSibling: <any>null,
+          prevSibling: <any>null,
+          nextSiblingInlineCitAttr: <any>null,
+          prevSiblingInlineCitAttr: <any>null
+        };
         var $bookmark = _$contents.find(_bookmarkSelector);
         siblings.nextSibling = $bookmark[0] && $($bookmark[0].nextSibling);
         siblings.prevSibling = $bookmark[0] && $($bookmark[0].previousSibling);
@@ -980,7 +990,7 @@ pickle.colorChange('ahhh');
         var footnoteWidget, footnoteId;
         // So first we need to find the right Widget instance:
         // (I hope there's a better way of doing this but I can't find one)
-        for (i in _editor.widgets.instances) {
+        for (<any>i in _editor.widgets.instances) {
             if (_editor.widgets.instances[i].name === 'footnotes') {
                 footnoteWidget = _editor.widgets.instances[i];
                 break;
@@ -1274,4 +1284,4 @@ pickle.colorChange('ahhh');
             .replace(/\s*\){1}\s*$/g, '');
     }
   });
-}(window.jQuery));
+}(CKEDITOR, jQuery));

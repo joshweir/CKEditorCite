@@ -1,6 +1,9 @@
+declare var CKEDITOR: any;
+declare var jQuery: any;
+
 (function($) {
     "use strict";
-	
+
     // Dialog definition.
     CKEDITOR.dialog.add( 'intextCiteDialog', function( editor ) {
 		return {
@@ -46,11 +49,11 @@
                                 dialog.footnotes_el = $el;
                                 editor = dialog.getParentEditor();
                                 $this = this;
-								//add preview block 
+								//add preview block
 								$el.children('div').css('display', 'none');
-								$el.append('<style>.validation-error{color: #B14644; padding: 0 0 10px;} ' + 
-									'.intext-citation-preview a{color: blue; text-decoration: underline; ' + 
-									'pointer-events: none; cursor: default;}</style><div style="padding: ' + 
+								$el.append('<style>.validation-error{color: #B14644; padding: 0 0 10px;} ' +
+									'.intext-citation-preview a{color: blue; text-decoration: underline; ' +
+									'pointer-events: none; cursor: default;}</style><div style="padding: ' +
 									'10px 0 10px 10px; border: solid 1px #B6B6B6;" class="intext-citation-preview"></div>');
 								if (!$('.intext-citation-validation').length)
 									$('<div class="intext-citation-validation validation-error"></div>').insertBefore($el);
@@ -74,7 +77,7 @@
                 jQuery('.cke_dialog').css({'position': 'absolute', 'top': '2%'});
 
                 var current_editor_id = dialog.getParentEditor().id;
-				
+
                 CKEDITOR.replaceAll( function( textarea, config ) {
 					// Make sure the textarea has the correct class:
                     if (!textarea.className.match(/edit_footnote_text/)) {
@@ -135,13 +138,13 @@
             onOk: function() {
 				var dialog = this;
                 var footnote_editor = CKEDITOR.instances[dialog.editor_name];
-                var footnote_data   = CKEDITOR.instances[dialog.editor_name].getData(); 
+                var footnote_data   = CKEDITOR.instances[dialog.editor_name].getData();
                 footnote_editor.destroy();
-				
+
 				$(editor.widgets.focused.element.$).find('a').html(footnote_data);
 				//replace the data-inline-citation attribute
 				$(editor.widgets.focused.element.$).attr('data-inline-citation',footnote_data);
-				
+
                 return;
             },
 
@@ -152,4 +155,4 @@
             }
         };
     });
-}(window.jQuery));
+}(jQuery));

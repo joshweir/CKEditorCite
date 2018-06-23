@@ -1,3 +1,6 @@
+declare var CKEDITOR: any;
+declare var jQuery: any;
+
 (function($) {
     "use strict";
 
@@ -30,8 +33,8 @@
                         },
 						{
 							type: 'html',
-							html: '<p style="color: grey; font-style: italic;">eg: Laemmli, U. K. (1970). ' + 
-								'Cleavage of Structural Proteins<br>during the Assembly of the Head of ' + 
+							html: '<p style="color: grey; font-style: italic;">eg: Laemmli, U. K. (1970). ' +
+								'Cleavage of Structural Proteins<br>during the Assembly of the Head of ' +
 								'Bacteriophage T4. Nature, 227(5259), 680-685.</p>'
 						},
 						{
@@ -60,7 +63,7 @@
                                     $footnotes, $this;
                                 editor = dialog.getParentEditor();
                                 $this = this;
-								//add preview block 
+								//add preview block
 								$el.children('div').css('display', 'none');
 								$el.append('<style>.validation-error{color: #B14644; padding: 0 0 10px;} ' +
 									'.intext-citation-preview a{color: blue; text-decoration: underline; ' +
@@ -79,10 +82,10 @@
             onShow: function() {
                 this.setupContent();
                 var dialog = this;
-                
+
 				//clear any validation messages
 				$('.intext-citation-validation').html('');
-				
+
                 // Allow page to scroll with dialog to allow for many/long footnotes
                 // (https://github.com/andykirk/CKEditorFootnotes/issues/12)
                 jQuery('.cke_dialog').css({'position': 'absolute', 'top': '2%'});
@@ -97,7 +100,7 @@
                     }
 					if (textarea.className.match(/intext_footnote_text/))
 						dialog.intext_editor_name = textarea.id;
-					else 
+					else
 						dialog.citation_editor_name = textarea.id;
                     // Make sure we only instantiate the relevant editor:
                     var el = textarea;
@@ -164,4 +167,4 @@
             }
         };
     });
-}(window.jQuery));
+}(jQuery));

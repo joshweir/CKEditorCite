@@ -58,7 +58,12 @@ const config = {
     resolve,
     module: { rules: rules({ production: isProduction, browser: true }) },
     resolve,
-    plugins: plugins({ production: isProduction, browser: true })
+    plugins: plugins({ production: isProduction, browser: true }),
+    devServer: {
+      contentBase: PATHS.demo,
+      compress: true,
+      open: true
+    }
 };
 const commonDevConfig = {
   devtool: 'eval'
@@ -114,9 +119,30 @@ const intextCiteDialogConfig = Object.assign({}, config, {
     },
 }, intextCiteDialogEnvConfig);
 
+const pluginStylesConfig = Object.assign({}, config, {
+    name: 'pluginStyles',
+    context: PATHS.srcstyles,
+    entry: './plugin.css',
+    output: {
+       path: PATHS.styles,
+       filename: 'plugin.css'
+    },
+});
+
+const pluginIconsConfig = Object.assign({}, config, {
+    name: 'pluginIcons',
+    context: PATHS.srcicons,
+    entry: './cite.png',
+    output: {
+       path: PATHS.icons,
+       filename: 'cite.png'
+    },
+});
+
 module.exports = () => {
   console.log(`Running webpack in ${process.env.NODE_ENV} mode`);
-  return pluginConfig/*[
-    pluginConfig, citeDialogConfig, intextCiteDialogConfig
-  ]*/ ;
+  return [
+    pluginConfig, citeDialogConfig, intextCiteDialogConfig, pluginStylesConfig,
+    pluginIconsConfig
+  ];
 };

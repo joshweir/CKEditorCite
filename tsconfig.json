@@ -1,3 +1,15 @@
 {
-  "sourceMap": true
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "sourceMap": true,
+    "lib": ["es2015", "dom"],
+    "types": ["webpack-env"]
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "src/*"
+  ]
 }
