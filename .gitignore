@@ -10,3 +10,4 @@ compiled
 coverage/
 yarn-error.log
 __snapshots__/
+*.hot-update.*

@@ -7,30 +7,15 @@ module.exports = ({ production = false, browser = false } = {}) => {
   const compress = { warnings: false };
   const compileTimeConstantForMinification = { __PRODUCTION__: JSON.stringify(production) };
 
-  if (!production && !browser) {
-    return [
-      new webpack.EnvironmentPlugin(['NODE_ENV']),
-      new webpack.DefinePlugin(compileTimeConstantForMinification),
-      new webpack.BannerPlugin(bannerOptions)
-    ];
-  }
   if (!production && browser) {
     return [
       new webpack.EnvironmentPlugin(['NODE_ENV']),
       new webpack.DefinePlugin(compileTimeConstantForMinification),
       new ExtractTextPlugin({
-        filename: 'plugin.css'
+        filename: 'styles/plugin.css'
       }),
       new webpack.HotModuleReplacementPlugin(),
       new webpack.NoEmitOnErrorsPlugin()
-    ];
-  }
-  if (production && !browser) {
-    return [
-      new webpack.EnvironmentPlugin(['NODE_ENV']),
-      new webpack.DefinePlugin(compileTimeConstantForMinification),
-      new webpack.BannerPlugin(bannerOptions),
-      new webpack.optimize.UglifyJsPlugin({ compress })
     ];
   }
   if (production && browser) {
@@ -38,7 +23,7 @@ module.exports = ({ production = false, browser = false } = {}) => {
       new webpack.EnvironmentPlugin(['NODE_ENV']),
       new webpack.DefinePlugin(compileTimeConstantForMinification),
       new ExtractTextPlugin({
-        filename: 'plugin.css'
+        filename: 'styles/plugin.css'
       }),
       /*new webpack.optimize.UglifyJsPlugin({ compress }),*/
       new ManifestPlugin({

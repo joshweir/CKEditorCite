@@ -3,6 +3,7 @@
  */
 
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const WebpackShellPlugin = require('webpack-shell-plugin');
 const PATHS = require('./paths');
 const rules = require('./rules');
 const plugins = require('./plugins');
@@ -11,7 +12,7 @@ const resolve = require('./resolve');
 
 const isProduction = process.env.NODE_ENV === 'production'
 const node = { __dirname: true, __filename: true };
-const hotMiddlewareScript = 'webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000&reload=true';
+// const hotMiddlewareScript = 'webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000&reload=true';
 /*
 const removeMe = () => {
 
@@ -60,12 +61,7 @@ const config = {
     resolve,
     module: { rules: rules({ production: isProduction, browser: true }) },
     resolve,
-    plugins: plugins({ production: isProduction, browser: true }),
-    devServer: {
-      contentBase: PATHS.demo,
-      compress: true,
-      open: true
-    }
+    plugins: plugins({ production: isProduction, browser: true })
 };
 const commonDevConfig = {
   devtool: 'eval'
@@ -76,37 +72,20 @@ const commonProdConfig = {
 
 const pluginProdConfig = Object.assign({}, commonProdConfig);
 const pluginDevConfig = Object.assign({}, commonDevConfig, {
-  entry: ['./plugin', hotMiddlewareScript]
+  entry: ['./plugin']
 });
 const citeDialogProdConfig = Object.assign({}, commonProdConfig);
 const citeDialogDevConfig = Object.assign({}, commonDevConfig, {
-  entry: ['./cite', hotMiddlewareScript]
+  entry: ['./cite']
 });
 const intextCiteDialogProdConfig = Object.assign({}, commonProdConfig);
 const intextCiteDialogDevConfig = Object.assign({}, commonDevConfig, {
-  entry: ['./intext_cite', hotMiddlewareScript]
+  entry: ['./intext_cite']
 });
 
 const pluginEnvConfig = isProduction ? pluginProdConfig : pluginDevConfig;
 const citeDialogEnvConfig = isProduction ? citeDialogProdConfig : citeDialogDevConfig;
 const intextCiteDialogEnvConfig = isProduction ? intextCiteDialogProdConfig : intextCiteDialogDevConfig;
-
-const pluginConfig = Object.assign({}, config, {
-    name: 'plugin',
-    context: PATHS.src,
-    entry: './plugin',
-    output: {
-       path: PATHS.app,
-       filename: 'plugin.js'
-    },
-}, pluginEnvConfig, {
-  plugins: plugins({ production: isProduction, browser: true })
-    .concat(
-      new CopyWebpackPlugin([
-          {from:'icons', to:'icons'}
-      ])
-    )
-});
 
 const citeDialogConfig = Object.assign({}, config, {
     name: 'citeDialog',
@@ -128,29 +107,35 @@ const intextCiteDialogConfig = Object.assign({}, config, {
     },
 }, intextCiteDialogEnvConfig);
 
-const pluginStylesConfig = Object.assign({}, config, {
-    name: 'pluginStyles',
-    context: PATHS.srcstyles,
-    entry: './plugin.css',
+const pluginConfig = Object.assign({}, config, {
+    name: 'plugin',
+    context: PATHS.src,
+    entry: './plugin',
     output: {
-       path: PATHS.styles,
-       filename: 'plugin.css'
+       path: PATHS.app,
+       filename: 'plugin.js'
     },
+}, pluginEnvConfig, {
+  plugins: plugins({ production: isProduction, browser: true })
+    .concat(
+      new CopyWebpackPlugin([
+          {from: 'icons', to: 'icons'}
+      ]),
+      new WebpackShellPlugin({
+        onBuildExit: [
+          'echo "Transfering files to demo... "',
+          'rm -rf demo/ckeditor/plugins/cite/',
+          'mkdir -p demo/ckeditor/plugins/cite',
+          'cp -r cite/ demo/ckeditor/plugins/cite/',
+          'echo "DONE ... "',
+        ],
+      })
+    )
 });
-/*
-const pluginIconsConfig = Object.assign({}, config, {
-    name: 'pluginIcons',
-    context: PATHS.srcicons,
-    entry: './cite.png',
-    output: {
-       path: PATHS.icons,
-       filename: 'cite.png'
-    },
-});
-*/
+
 module.exports = () => {
   console.log(`Running webpack in ${process.env.NODE_ENV} mode`);
   return [
-    pluginConfig, citeDialogConfig, intextCiteDialogConfig, pluginStylesConfig
+    citeDialogConfig, intextCiteDialogConfig, pluginConfig
   ];
 };

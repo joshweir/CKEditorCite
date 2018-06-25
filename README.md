@@ -21,14 +21,14 @@ The existing [CKEditor Footnotes Plugin](https://github.com/andykirk/CKEditorFoo
 
 4. Adjacent In-text citations are automatically grouped together. eg. [1, 2]
 
-Demo: `demo/demo.html`.
+Demo: `demo/index.html`.
 
 ## Installation
 
-Clone this repo and run `demo/demo.html`; or
+Clone this repo and run `demo/index.html`; or
 
 Copy the `ckeditor/plugins/cite` directory to your ckeditor plugins folder, add `cite` to the `config.plugins` variable in `ckeditor/config.js`.
-Add the following to `ckeditor/config.js`: 
+Add the following to `ckeditor/config.js`:
 
     config.plugins = 'dialogui,dialog,basicstyles,entities,wysiwygarea,fakeobjects,lineutils,widget,menu,contextmenu,floatpanel,panel,undo,cite';`
 	config.extraAllowedContent = 'div h1 h2 h3 sup cite section b i strong span[data-*](*){*}';`

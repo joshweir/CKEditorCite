@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf cite/*",
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --content-base demo/",
+    "dev": "cross-env NODE_ENV=development webpack --colors --display-error-details --config ./webpack/webpack.config.js --watch & webpack-dev-server --content-base demo/ --hot --inline --compress",
     "build:dev": "cross-env NODE_ENV=development npm run webpack",
     "build": "npm run clean && cross-env NODE_ENV=production npm run webpack",
     "webpack": "webpack --colors --display-error-details --config ./webpack/webpack.config.js",
@@ -43,6 +43,7 @@
     "css-loader": "^0.28.11",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^1.1.11",
+    "jest": "^23.1.0",
     "postcss-cssnext": "^3.1.0",
     "postcss-import": "^11.1.0",
     "postcss-reporter": "^5.0.0",
@@ -53,6 +54,7 @@
     "webpack": "^4.12.0",
     "webpack-cli": "^3.0.8",
     "webpack-hot-middleware": "^2.22.2",
-    "webpack-manifest-plugin": "^2.0.3"
+    "webpack-manifest-plugin": "^2.0.3",
+    "webpack-shell-plugin": "^0.5.0"
   }
 }

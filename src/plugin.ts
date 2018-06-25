@@ -1,5 +1,5 @@
 import { compose, curry } from 'ramda';
-//import * as pluginStyles from './styles/plugin.css';
+import './styles/plugin.css';
 import foo from './styles/test.js';
 console.log(foo.foo);
 declare var CKEDITOR: any;
@@ -12,7 +12,7 @@ class Pickle {
   }
 }
 let pickle = new Pickle();
-pickle.colorChange('ahhh');
+pickle.colorChange('ahhhhhhloll');
 
 ;(function(CKEDITOR, $) {
   'use strict';
