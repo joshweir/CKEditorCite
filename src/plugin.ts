@@ -83,7 +83,7 @@ pickle.colorChange('ahhh');
       _cursorAfterWidgetHtml = '<span class="'+ _cursorAfterWidgetClass +
           '">&nbsp;</span>';
 
-  jQuery.fn.reverse = [].reverse; 
+  jQuery.fn.reverse = [].reverse;
 
   CKEDITOR.plugins.add('cite', {
 

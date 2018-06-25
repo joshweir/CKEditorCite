@@ -1,6 +1,8 @@
 /*
  * process.env.NODE_ENV - used to determine whether we generate a production or development bundle
  */
+
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const PATHS = require('./paths');
 const rules = require('./rules');
 const plugins = require('./plugins');
@@ -97,7 +99,14 @@ const pluginConfig = Object.assign({}, config, {
        path: PATHS.app,
        filename: 'plugin.js'
     },
-}, pluginEnvConfig);
+}, pluginEnvConfig, {
+  plugins: plugins({ production: isProduction, browser: true })
+    .concat(
+      new CopyWebpackPlugin([
+          {from:'icons', to:'icons'}
+      ])
+    )
+});
 
 const citeDialogConfig = Object.assign({}, config, {
     name: 'citeDialog',
@@ -128,7 +137,7 @@ const pluginStylesConfig = Object.assign({}, config, {
        filename: 'plugin.css'
     },
 });
-
+/*
 const pluginIconsConfig = Object.assign({}, config, {
     name: 'pluginIcons',
     context: PATHS.srcicons,
@@ -138,11 +147,10 @@ const pluginIconsConfig = Object.assign({}, config, {
        filename: 'cite.png'
     },
 });
-
+*/
 module.exports = () => {
   console.log(`Running webpack in ${process.env.NODE_ENV} mode`);
   return [
-    pluginConfig, citeDialogConfig, intextCiteDialogConfig, pluginStylesConfig,
-    pluginIconsConfig
+    pluginConfig, citeDialogConfig, intextCiteDialogConfig, pluginStylesConfig
   ];
 };

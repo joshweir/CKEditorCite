@@ -38,7 +38,7 @@ module.exports = ({ production = false, browser = false } = {}) => {
 
   const serverLoaders = createCssLoaders(false);
   const browserLoaders = createBrowserLoaders(production)(createCssLoaders(true));
-
+  /*
   return {
     test: /\.css$/,
     use: [
@@ -51,6 +51,19 @@ module.exports = ({ production = false, browser = false } = {}) => {
         }
       }
     ],
+    include: PATHS.srcstyles
+  };*/
+
+  return {
+    test: /\.css$/i,
+    use: ExtractTextPlugin.extract({
+      use: {
+        loader: 'css-loader',
+        options: {
+          minimize: true
+        }
+      }
+    }),
     include: PATHS.srcstyles
   };
 };

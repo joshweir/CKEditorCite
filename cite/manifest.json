@@ -1,4 +1,5 @@
 {
   "main.js": "plugin.js",
-  "main.js.map": "plugin.js.map"
+  "main.js.map": "plugin.js.map",
+  "icons/cite.png": "icons/cite.png"
 }
