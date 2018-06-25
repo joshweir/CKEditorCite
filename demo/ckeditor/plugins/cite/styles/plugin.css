@@ -1,26 +1,2 @@
-/* Cite Plugin Styles */
-sup[data-footnote-id] {
-    vertical-align: 0;
-    font-size: inherit;
-}
-
-span.cke_widget_wrapper.cke_widget_inline {
-    display: inline !important;
-}
-
-span.cke_widget_wrapper.cke_widget_inline a {
-    color: #333;
-    text-decoration: none;
-}
-
-.footnotes cite{font-style: normal;}
-
-.footnotes ol {
-    padding: 0 16px;
-}
-
-.hidden{display: none;}
-
-span[data-cursor-tmp] {
-    display: none;
-}
+sup[data-footnote-id]{vertical-align:0;font-size:inherit}span.cke_widget_wrapper.cke_widget_inline{display:inline!important}span.cke_widget_wrapper.cke_widget_inline a{color:#333;text-decoration:none}.footnotes cite{font-style:normal}.footnotes ol{padding:0 16px}.hidden,span[data-cursor-tmp]{display:none}.foo{display:grid;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+/*# sourceMappingURL=plugin.css.map*/

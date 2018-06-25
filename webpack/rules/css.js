@@ -6,12 +6,25 @@ module.exports = ({ production = false, browser = false } = {}) => {
   return {
     test: /\.css$/i,
     use: ExtractTextPlugin.extract({
-      use: {
-        loader: 'css-loader',
-        options: {
-          minimize: production
-        }
-      }
+      fallback: 'style-loader',
+      use: [
+        {
+          loader: 'css-loader',
+          options: {
+            minimize: production,
+            autoprefixer: false,
+            sourceMap: true,
+            importLoaders: 1
+          }
+        },
+        {
+          loader: 'postcss-loader',
+          options: {
+            ident: 'postcss',
+            plugins: () => [ require('autoprefixer')() ]
+          }
+       }
+      ]
     }),
     include: PATHS.srcstyles
   };

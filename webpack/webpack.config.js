@@ -56,7 +56,6 @@ const removeMe = () => {
 */
 
 const config = {
-    mode: process.env.NODE_ENV || 'production',
     node,
     resolve,
     module: { rules: rules({ production: isProduction, browser: true }) },
@@ -133,8 +132,8 @@ const pluginConfig = Object.assign({}, config, {
     )
 });
 
-module.exports = () => {
-  console.log(`Running webpack in ${process.env.NODE_ENV} mode`);
+module.exports = (env, argv) => {
+  console.log(`Running webpack in ${process.env.NODE_ENV} mode ${argv.mode}`);
   return [
     citeDialogConfig, intextCiteDialogConfig, pluginConfig
   ];

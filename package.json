@@ -4,11 +4,9 @@
   "description": "CKEditor Cite Plugin ====================",
   "private": true,
   "scripts": {
-    "clean": "rm -rf cite/*",
-    "dev": "cross-env NODE_ENV=development webpack --colors --display-error-details --config ./webpack/webpack.config.js --watch & webpack-dev-server --content-base demo/ --hot --inline --compress",
-    "build:dev": "cross-env NODE_ENV=development npm run webpack",
-    "build": "npm run clean && cross-env NODE_ENV=production npm run webpack",
-    "webpack": "webpack --colors --display-error-details --config ./webpack/webpack.config.js",
+    "dev": "cross-env NODE_ENV=development webpack --mode development --colors --display-error-details --config ./webpack/webpack.config.js --watch & webpack-dev-server --content-base demo/ --hot --inline --compress",
+    "build:dev": "cross-env NODE_ENV=development webpack --mode development --colors --display-error-details --config ./webpack/webpack.config.js",
+    "build": "cross-env NODE_ENV=production webpack --mode production --colors --display-error-details --config ./webpack/webpack.config.js",
     "test": "jest"
   },
   "repository": {
@@ -36,8 +34,10 @@
   },
   "devDependencies": {
     "@types/webpack-env": "^1.13.6",
+    "autoprefixer": "^8.6.3",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.4",
+    "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.1",
     "cross-env": "^5.2.0",
     "css-loader": "^0.28.11",
@@ -46,6 +46,7 @@
     "jest": "^23.1.0",
     "postcss-cssnext": "^3.1.0",
     "postcss-import": "^11.1.0",
+    "postcss-loader": "^2.1.5",
     "postcss-reporter": "^5.0.0",
     "style-loader": "^0.21.0",
     "ts-loader": "^4.4.1",
