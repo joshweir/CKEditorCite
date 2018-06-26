@@ -1,17 +1,17 @@
+import { contentFrom } from '../ck-functional';
+import reorderCitations from '../cite/reorder-citations';
 import store from '../store/store';
 
 declare var CKEDITOR: any;
 declare var $: any;
 
-const retrieveContentsAndReorderMarkersOnInstanceReady =
-function (editor : any) {
+const retrieveContentsAndReorderMarkersOnInstanceReady = (editor : any) => {
   // Force a reorder on startup to make sure all vars are set
   // (e.g. footnotes store):
-  let self = this;
-  editor.on('instanceReady', function (evt) {
-    _$contents = $(_editor.editable().$);
-    self.reorderMarkers('startup');
-    _$contents = $(_editor.editable().$);
+  editor.on('instanceReady', () => {
+    store.set({ contents: $(contentFrom(editor)) });
+    reorderCitations(editor);
+    store.set({ contents: $(contentFrom(editor)) });
   });
 };
 

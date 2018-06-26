@@ -1,3 +1,4 @@
+import { footnotesPrefix } from '../ck-functional';
 import store from '../store/store';
 
 declare var CKEDITOR: any;
@@ -11,11 +12,10 @@ const retrieveFootnotesEditableElements = (editor : any, contents : any) => {
     },
   };
   let i = 1;
-  const footnotesPrefix = editor.config.footnotesPrefix;
-  const prefix = footnotesPrefix ? `-${footnotesPrefix}` : '';
   contents.find('.footnotes li').each(function () {
     definition[`footnote_${i}`] = {
-      selector: `#footnote${prefix}-${$(this).attr('data-footnote-id')} .cite`,
+      selector: `#footnote${footnotesPrefix(editor)}-` +
+        `${$(this).attr('data-footnote-id')} .cite`,
       allowedContent: 'a[href]; cite[*](*); span[*](*); strong em br i',
     };
     i += 1;
