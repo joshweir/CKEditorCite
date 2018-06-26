@@ -1,9 +1,12 @@
 import buildFootnote from './build-footnote';
 import buildInlineCitation from './build-inline-citation';
 import { find } from '../jquery-functional';
-import { footnotesPrefix } from '../ck-functional';
+import { footnotesHeaderEls, footnotesPrefix,
+  footnotesTitle } from '../ck-functional';
+import { revertQuotesPlaceholder } from './utils';
 import store from '../store/store';
 
+declare var CKEDITOR: any;
 declare var $: any;
 
 const initialData = () => ({
@@ -16,44 +19,31 @@ const initialData = () => ({
 });
 
 const addFootnote = (editor, $contents, footnote, forceReplace) => {
-  //var $contents  = $(_editor.editable().$);
-  var $footnotes = _$contents.find('.footnotes');
-  if ($footnotes.length == 0) {
-      var headerTitle = _editor.config.footnotesTitle ?
-          _editor.config.footnotesTitle : 'References';
-      var dataHeaderTitle =
-          _$contents.find('.sup[data-footnotes-heading]')
-              .attr('data-footnotes-heading');
-      headerTitle =
-          this.revertQuotesPlaceholder(
-              (dataHeaderTitle ? dataHeaderTitle : headerTitle));
-      var headerEls = ['<h2>', '</h2>'];
-      if (_editor.config.footnotesHeaderEls) {
-          headerEls = _editor.config.footnotesHeaderEls;
+  const $footnotes = find('.footnotes', $contents);
+  if ($footnotes.length <= 0) {
+    const dataHeaderTitle =
+    find('.sup[data-footnotes-heading]', $contents)
+    .attr('data-footnotes-heading');
+    const headerTitle =
+    revertQuotesPlaceholder(dataHeaderTitle || footnotesTitle(editor));
+    const [headerOpenTag, headerCloseTag] = footnotesHeaderEls(editor);
+    const container =
+    '<section class="footnotes"><header>' +
+    headerOpenTag + headerTitle + headerCloseTag +
+    '</header><ol>' + footnote + '</ol></section>';
+    $contents.append(container);
+    $contents.find('section.footnotes').each(function () {
+      if (!$(this).parent('.cke_widget_wrapper').length) {
+        editor.widgets.initOn(
+            new CKEDITOR.dom.element(this),
+            'footnotes');
       }
-      var container =
-          '<section class="footnotes"><header>' +
-          headerEls[0] + headerTitle + headerEls[1] +
-          '</header><ol>' + footnote + '</ol></section>';
-      // Move cursor to end of content:
-      /*
-      var range = _editor.createRange();
-      range.moveToElementEditEnd(range.root);
-      _editor.getSelection().selectRanges([range]);
-      _editor.insertHtml(container);
-      */
-      _$contents.append(container);
-      _$contents.find("section.footnotes").each(function(){
-          if (!$(this).parent('.cke_widget_wrapper').length)
-              _editor.widgets.initOn(
-                  new CKEDITOR.dom.element(this),
-                  'footnotes' );
-      });
+    });
   } else {
-      if (replace)
-          $footnotes.find('ol').html(footnote);
-      else
-          $footnotes.find('ol').append(footnote);
+    const footnotesOl = find('ol', $footnotes);
+    forceReplace ?
+      footnotesOl.html(footnote) :
+      footnotesOl.append(footnote);
   }
 };
 
@@ -121,7 +111,7 @@ export default (editor) => {
     editor.footnotesStore[data.order[i]] = data.originalCitationText[i];
   }
   // Insert the footnotes into the list:
-  addFootnote(footnotes, true);
+  addFootnote(editor, $contents, footnotes, true);
 
   // Next we need to reinstate the 'editable' properties of the footnotes.
   // (we have to do this individually due to Widgets 'fireOnce' for editable selectors)
