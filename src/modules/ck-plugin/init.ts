@@ -1,11 +1,10 @@
-import editor from './editor';
+import { initWidgets, initEventHandlers } from './index';
+import store from '../store/store';
 
 declare var CKEDITOR: any;
 declare var jQuery: any;
 
-export default (ed : any) => {
-  editor.set(ed);
-  /*
+export default (editor : any) => {
   // Check for jQuery
   // @TODO - remove if/when JQ dep. is removed.
   if (typeof(jQuery) === 'undefined') {
@@ -14,9 +13,7 @@ export default (ed : any) => {
   }
   // Allow `cite` to be editable:
   CKEDITOR.dtd.$editable['span'] = 1;
-  _editor = editor;
-  _editor.addContentsCss(this.path + 'styles/plugin.css');
-  this.initWidgets();
-  this.setupEditorEventHandlers();
-  */
+  editor.addContentsCss(`${this.path}styles/plugin.css`);
+  initWidgets(), initEventHandlers();
+  store.reset(), store.set({ editor });
 };

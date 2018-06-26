@@ -1,6 +1,6 @@
 import { compose, curry } from 'ramda';
 import './styles/plugin.css';
-import { init, editor } from './modules/ck-plugin';
+import { init } from './modules/ck-plugin';
 
 declare var CKEDITOR: any;
 declare var jQuery: any;
@@ -47,10 +47,7 @@ declare var $: any;
     icons: 'cite',
 
     // The plugin initialization logic goes inside this method.
-    init: function(ed) {
-      init(ed);
-      console.log('check!!!!', editor.get());
-
+    init, /*: function(ed) {
       // Check for jQuery
       // @TODO - remove if/when JQ dep. is removed.
       if (typeof(jQuery) === 'undefined') {
@@ -63,7 +60,7 @@ declare var $: any;
       _editor.addContentsCss(this.path + 'styles/plugin.css');
       this.initWidgets();
       this.setupEditorEventHandlers();
-    },
+    }*/
 
     initWidgets: function() {
         this.registerWidgets();
