@@ -1,58 +1,13 @@
 import { compose, curry } from 'ramda';
 import './styles/plugin.css';
-import foo from './styles/test.js';
-console.log(foo.foo);
+import { init, editor } from './modules/ck-plugin';
+
 declare var CKEDITOR: any;
 declare var jQuery: any;
+declare var $: any;
 
-class Pickle {
-  private ahhh;
-  colorChange(event: string): void {
-    this.ahhh = event;
-  }
-}
-let pickle = new Pickle();
-pickle.colorChange('ahhhhhhloll');
 
-;(function(CKEDITOR, $) {
-  'use strict';
-
-  //TODO: use webpack, replace functional utilities with lodash equivelant
-  //functional utilities
-  /*
-  var compose = function compose() {
-    for (var _len = arguments.length, fns = Array(_len), _key = 0; _key < _len; _key++) {
-      fns[_key] = arguments[_key];
-    }
-
-    return fns.reverse().reduce(function (prevFn, nextFn) {
-      return function (value) {
-        return nextFn(prevFn(value));
-      };
-    }, function (value) {
-      return value;
-    });
-  };
-  */
-  /*
-  var curry = function curry(fn) {
-    return function cf() {
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments[_key];
-      }
-
-      return args.length >= fn.length ? fn.apply(undefined, args) : function () {
-        for (var _len2 = arguments.length, newArgs = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-          newArgs[_key2] = arguments[_key2];
-        }
-
-        return cf.apply(undefined, [].concat(args, newArgs));
-      };
-    };
-  };
-  */
-
-  //functional string utilities
+  // functional string utilities
   var replace = function (to, from, str) { return str.replace(from, to); };
   var replaceC = curry(replace);
 
@@ -92,19 +47,22 @@ pickle.colorChange('ahhhhhhloll');
     icons: 'cite',
 
     // The plugin initialization logic goes inside this method.
-    init: function(editor) {
-        // Check for jQuery
-        // @TODO - remove if/when JQ dep. is removed.
-        if (typeof(jQuery) == 'undefined') {
-            console.warn('jQuery required but undetected so quitting cite.');
-            return false;
-        }
-        // Allow `cite` to be editable:
-        CKEDITOR.dtd.$editable['span'] = 1;
-        _editor = editor;
-        _editor.addContentsCss(this.path + 'styles/plugin.css');
-        this.initWidgets();
-        this.setupEditorEventHandlers();
+    init: function(ed) {
+      init(ed);
+      console.log('check!!!!', editor.get());
+
+      // Check for jQuery
+      // @TODO - remove if/when JQ dep. is removed.
+      if (typeof(jQuery) === 'undefined') {
+        console.warn('jQuery required but undetected so quitting cite.');
+        return false;
+      }
+      // Allow `cite` to be editable:
+      CKEDITOR.dtd.$editable['span'] = 1;
+      _editor = ed;
+      _editor.addContentsCss(this.path + 'styles/plugin.css');
+      this.initWidgets();
+      this.setupEditorEventHandlers();
     },
 
     initWidgets: function() {
@@ -1284,4 +1242,3 @@ pickle.colorChange('ahhhhhhloll');
             .replace(/\s*\){1}\s*$/g, '');
     }
   });
-}(CKEDITOR, jQuery));

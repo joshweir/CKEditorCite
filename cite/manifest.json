@@ -1,7 +1,0 @@
-{
-  "main.js": "plugin.js",
-  "main.css": "styles/plugin.css",
-  "main.js.map": "plugin.js.map",
-  "main.css.map": "styles/plugin.css.map",
-  "icons/cite.png": "icons/cite.png"
-}
