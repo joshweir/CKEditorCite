@@ -47,7 +47,26 @@
 		<div style="color: red;" class="validation-message"></div>
 	</div>
     <div id="ckeditor-container">
-		<textarea class="form-control" name="doc"></textarea>
+		<textarea class="form-control" name="doc">
+      <p>
+        This is a test paragraph that is cited.
+        <span data-inline-cit="1">(<span class="sup" data-citation="footnote1" data-footnote-id="kwrnf" data-citation-modified="footnote1" data-inline-citation="inline1" data-ext-id="1" data-footnotes-heading="References"><span class="inline-citation-before-link"></span><span id="footnote-marker-kwrnf-1" data-citation="footnote1" data-citation-modified="footnote1" data-inline-citation="inline1" data-footnote-id="kwrnf" data-ext-id="1">inline1</span>
+        <span class="inline-citation-after-link"></span></span>)</span>
+      </p>
+      <p>
+        This is another paragraph that is multiple citations.
+        <span data-inline-cit="2">(<span class="sup" data-citation="footnote1" data-footnote-id="kwrnf" data-citation-modified="footnote1" data-inline-citation="inline1" data-ext-id="1">
+            <span class="inline-citation-before-link"></span>
+            <span id="footnote-marker-kwrnf-2" data-citation="footnote1" data-citation-modified="footnote1" data-inline-citation="inline1" data-footnote-id="kwrnf" data-ext-id="1">inline1</span>
+            <span class="inline-citation-after-link"></span>
+          </span>,
+          <span class="sup" data-citation="footnote2" data-footnote-id="e8rrm" data-citation-modified="footnote2" data-inline-citation="inline2" data-ext-id="2">
+            <span class="inline-citation-before-link"></span>
+            <span id="footnote-marker-e8rrm-1" data-citation="footnote2" data-citation-modified="footnote2" data-inline-citation="inline2" data-footnote-id="e8rrm" data-ext-id="2">inline2</span>
+            <span class="inline-citation-after-link"></span>
+          </span>)</span>
+      </p>
+    </textarea>
 	</div>
 	<script>
 		;(function(){

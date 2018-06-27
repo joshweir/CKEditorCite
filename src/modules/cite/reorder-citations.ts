@@ -47,7 +47,7 @@ const addFootnote = (editor, $contents, footnote, forceReplace) => {
   }
 };
 
-export default (editor) => {
+const reorderCitations = (editor) => {
   editor.fire('lockSnapshot');
   const prefix  = footnotesPrefix(editor);
   const data = initialData();
@@ -115,7 +115,8 @@ export default (editor) => {
 
   // Next we need to reinstate the 'editable' properties of the footnotes.
   // (we have to do this individually due to Widgets 'fireOnce' for editable selectors)
-  var footnoteWidget, footnoteId;
+  let footnoteWidget;
+  let footnoteId;
   // So first we need to find the right Widget instance:
   // (I hope there's a better way of doing this but I can't find one)
   for (<any>i in editor.widgets.instances) {
@@ -141,3 +142,5 @@ export default (editor) => {
   }
   editor.fire('unlockSnapshot');
 };
+
+export default reorderCitations;

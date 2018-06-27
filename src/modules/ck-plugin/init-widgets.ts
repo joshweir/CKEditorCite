@@ -50,7 +50,7 @@ const registerWidgets = (editor : any) => {
   });
 };
 
-const addWidgetCommandsButtonsAndDialogs = (editor : any) => {
+const addWidgetCommandsButtonsAndDialogs = (editor : any, plugin : any) => {
   // Define editor commands that open our dialogs
   editor.addCommand('cite', new CKEDITOR.dialogCommand('citeDialog', {
     allowedContent: 'section[*](*);header[*](*);li[*];a[*];cite(*)[*];sup[*];div[*](sup)',
@@ -73,12 +73,12 @@ const addWidgetCommandsButtonsAndDialogs = (editor : any) => {
   });
 
   // Register dialogs
-  CKEDITOR.dialog.add('citeDialog', this.path + 'dialogs/cite.js');
-  CKEDITOR.dialog.add('intextCiteDialog', this.path + 'dialogs/intext_cite.js');
+  CKEDITOR.dialog.add('citeDialog', plugin.path + 'dialogs/cite.js');
+  CKEDITOR.dialog.add('intextCiteDialog', plugin.path + 'dialogs/intext_cite.js');
 };
 
-export default () => {
+export default (plugin : any) => {
   const editor = store.get('editor');
   registerWidgets(editor);
-  addWidgetCommandsButtonsAndDialogs(editor);
+  addWidgetCommandsButtonsAndDialogs(editor, plugin);
 };

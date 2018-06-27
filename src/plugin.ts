@@ -1,6 +1,6 @@
 import { compose, curry } from 'ramda';
 import './styles/plugin.css';
-import { init } from './modules/ck-plugin';
+import { init, insert } from './modules/ck-plugin';
 
 declare var CKEDITOR: any;
 declare var jQuery: any;
@@ -60,9 +60,9 @@ declare var $: any;
       _editor.addContentsCss(this.path + 'styles/plugin.css');
       this.initWidgets();
       this.setupEditorEventHandlers();
-    }*/
+    },*/
 
-    initWidgets: function() {
+    /*initWidgets: function() {
         this.registerWidgets();
         this.addWidgetCommandsButtonsAndDialogs();
     },
@@ -296,7 +296,41 @@ declare var $: any;
                 _editor.removeMenuItem('cut');
             }
         });
-    },
+    },*/
+
+    insert, /*: function(footnote, inlineCitation, externalId) {
+        this.setCursorBookmark();
+        //var $contents = $(editor.editable().$);
+        //if any sup widgets are currently focused, then place the cursor after them effectively unselecting the widget
+        //this prevents overwriting the existing widget.
+        //have to use a dummy span, select this span then remove it - couldnt find another way.
+        if (_editor.widgets.focused) {
+            $(_cursorAfterWidgetHtml)
+                .insertAfter($(_editor.widgets.focused.element.$).parent());
+            this.moveCursorAfterFocusedWidget();
+        }
+
+        this.removeDataInlineCitElsThatArentMarkers();
+        this.moveTextOutsideBracketsOutOfDataInlineCitEls();
+        this.moveTextOutsideBracketsOutOfDataInlineCitAutonumEls();
+        this.initInlineCitationAndFootnoteData(footnote,
+            inlineCitation, externalId);
+        this.createFootnoteIfDoesntExist();
+        this.generateInlineCitationHtml();
+        this.insertInlineCitationAndFormat();
+
+        //create a dummy span so that below we can place the cursor after the inserted marker
+        //allowing the user to continue typing after insert
+        $(_cursorAfterWidgetHtml).insertAfter(
+            _$contents
+                .find('.sup[data-footnote-id]:contains(X)')
+                .closest('[data-inline-cit'+
+                    (inlineCitation ? '' : 'autonum')+']'));
+        this.reorderMarkers('build');
+        //select after the inserted marker widget s
+        this.moveCursorAfterFocusedWidget();
+        _editor.focus();
+    },*/
 
     setCursorBookmark: function() {
         if(!_editor) return;
@@ -463,40 +497,6 @@ declare var $: any;
             .map(function(){
                 return $(this).attr('data-ext-id');
             }).toArray() || [];
-    },
-
-    insert: function(footnote, inlineCitation, externalId) {
-        this.setCursorBookmark();
-        //var $contents = $(editor.editable().$);
-        //if any sup widgets are currently focused, then place the cursor after them effectively unselecting the widget
-        //this prevents overwriting the existing widget.
-        //have to use a dummy span, select this span then remove it - couldnt find another way.
-        if (_editor.widgets.focused) {
-            $(_cursorAfterWidgetHtml)
-                .insertAfter($(_editor.widgets.focused.element.$).parent());
-            this.moveCursorAfterFocusedWidget();
-        }
-
-        this.removeDataInlineCitElsThatArentMarkers();
-        this.moveTextOutsideBracketsOutOfDataInlineCitEls();
-        this.moveTextOutsideBracketsOutOfDataInlineCitAutonumEls();
-        this.initInlineCitationAndFootnoteData(footnote,
-            inlineCitation, externalId);
-        this.createFootnoteIfDoesntExist();
-        this.generateInlineCitationHtml();
-        this.insertInlineCitationAndFormat();
-
-        //create a dummy span so that below we can place the cursor after the inserted marker
-        //allowing the user to continue typing after insert
-        $(_cursorAfterWidgetHtml).insertAfter(
-            _$contents
-                .find('.sup[data-footnote-id]:contains(X)')
-                .closest('[data-inline-cit'+
-                    (inlineCitation ? '' : 'autonum')+']'));
-        this.reorderMarkers('build');
-        //select after the inserted marker widget s
-        this.moveCursorAfterFocusedWidget();
-        _editor.focus();
     },
 
     initInlineCitationAndFootnoteData: function(footnote, inlineCitation,

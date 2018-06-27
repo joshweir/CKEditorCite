@@ -4,7 +4,7 @@ import store from '../store/store';
 declare var CKEDITOR: any;
 declare var jQuery: any;
 
-export default (editor : any) => {
+export default function (editor : any) {
   // Check for jQuery
   // @TODO - remove if/when JQ dep. is removed.
   if (typeof(jQuery) === 'undefined') {
@@ -14,6 +14,6 @@ export default (editor : any) => {
   // Allow `cite` to be editable:
   CKEDITOR.dtd.$editable['span'] = 1;
   editor.addContentsCss(`${this.path}styles/plugin.css`);
-  initWidgets(), initEventHandlers();
   store.reset(), store.set({ editor });
-};
+  initWidgets(this), initEventHandlers();
+}

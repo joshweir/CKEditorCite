@@ -1,5 +1,8 @@
 import { contentFrom } from '../ck-functional';
+import { cursorAfterWidgetHtml,
+  moveCursorAfterFocusedWidget } from '../cite/cursor';
 import reorderCitations from '../cite/reorder-citations';
+import { replaceQuotesWithPlaceholder } from '../cite/utils';
 import store from '../store/store';
 
 declare var CKEDITOR: any;
@@ -15,145 +18,145 @@ const retrieveContentsAndReorderMarkersOnInstanceReady = (editor : any) => {
   });
 };
 
-moveCursorAfterFocusedWidgetOnEditorBlur: function() {
+const moveCursorAfterFocusedWidgetOnEditorBlur =
+(editor : any, $contents : any) => {
   // unselect any focused sup widgets if user clicks away from the editor,
   // as if they then going to insert a citation external to ckeditor,
   // we dont want to overwrite any existing citation markers
-  _editor.on('blur', function() {
-    if (_editor.widgets.focused) {
-      $(_cursorAfterWidgetHtml)
-      .insertAfter($(_editor.widgets.focused.element.$).parent());
-      this.moveCursorAfterFocusedWidget();
+  editor.on('blur', () => {
+    if (editor.widgets.focused) {
+      $(cursorAfterWidgetHtml)
+      .insertAfter($(editor.widgets.focused.element.$).parent());
+      moveCursorAfterFocusedWidget(editor, $contents);
     }
   });
-},
+};
 
-reorderMarkersOnEditorChange: function() {
-    var self = this, wto;
-    // Add the reorder change event:
-    _editor.on('change', function(evt) {
-        clearTimeout(wto);
-        wto = setTimeout(function() {
-            var now = (new Date()).getTime().toString();
-            //set a locally stored timestamp to prevent an endless loop when reordering markers below..
-            if(!localStorage.getItem(_reorderMarkersTsKey))
-                localStorage
-                    .setItem(_reorderMarkersTsKey, now);
+const editingAFootnote = (evt) => {
+  const footnoteSection =
+  evt
+  .editor
+  .getSelection()
+  .getStartElement()
+  .getAscendant('section');
+  return !!(footnoteSection &&
+  footnoteSection.$.className.indexOf('footnotes') !== -1);
+};
 
-            // Prevent no selection errors:
-            if (!evt.editor.getSelection() ||
-                !evt.editor.getSelection().getStartElement())
-                return;
+const reorderMarkersOnEditorChange = (editor : any) => {
+  const reorderMarkersKey = 'reordering_markers';
+  let tmout;
+  editor.on('change', (evt) => {
+    clearTimeout(tmout);
+    tmout = setTimeout(
+    () => {
+      const now = (new Date()).getTime().toString();
+      // set a locally stored timestamp to prevent an endless loop when
+      // reordering markers
+      if (!localStorage.getItem(reorderMarkersKey)) {
+        localStorage.setItem(reorderMarkersKey, now);
+      }
+      // Prevent no selection errors:
+      if (!evt.editor.getSelection() ||
+          !evt.editor.getSelection().getStartElement()) return;
+      if (editingAFootnote(evt)) return;
 
-            if (self.editingAFootnote(evt))
-                return;
+      if (localStorage.getItem(reorderMarkersKey) === now) {
+        // SetTimeout seems to be necessary (it's used in the core but
+        // can't be 100% sure why)
+        setTimeout(() => reorderCitations(editor), 0);
+      }
+      // prevent an endless loop of reorderingMarkers on change
+      setTimeout(() => localStorage.removeItem(reorderMarkersKey), 200);
+    },
+    1000);
+  });
+};
 
-            if(localStorage.getItem(_reorderMarkersTsKey) === now) {
-                // SetTimeout seems to be necessary (it's used in the core but can't be 100% sure why)
-                setTimeout(function(){
-                    self.reorderMarkers('change');
-                }, 0);
+const updateMarkersWithCurrentCitationValuesOnEditorChange =
+(editor : any, $contents : any) => {
+  editor.on('change', () => {
+    // store the current value of footnotes citations against
+    // their inline citations as they may have been changed
+    // by the user and will be needed when footnotes are rebuilt
+    // get the current footnotes section header
+    const $footnotesHeader = $contents.find('.footnotes header h2').html();
+    $contents.find('.footnotes li .cite').each(function () {
+      const $cite = $(this);
+      const footnoteId = $cite.parent('li').attr('data-footnote-id');
+      $contents.find(`.sup[data-footnote-id=${footnoteId}]`).each(function () {
+        const $citeI = $(this);
+        $citeI.attr(
+          'data-citation-modified',
+          replaceQuotesWithPlaceholder($cite.html()),
+        );
+        if ($footnotesHeader) {
+          $citeI.attr(
+            'data-footnotes-heading',
+            replaceQuotesWithPlaceholder($footnotesHeader),
+          );
+        }
+      });
+    });
+  });
+};
+
+const invokeIntextCiteDialogOnDoubleClick = (editor : any) => {
+  editor.on('doubleclick', () => {
+    const el = editor.getSelection().getStartElement();
+    if (el.hasClass('cke_widget_focused') &&
+        el.find('.sup[data-footnote-id]').$.length) {
+      editor.execCommand('intext_cite');
+    }
+  });
+};
+
+const initMenuOnInstanceReady = (editor : any) => {
+  // add the Edit In-Text Citation right click menu item when right clicking
+  // in-text citations, remove the copy/cut/paste items.
+  CKEDITOR.on('instanceReady', () => {
+    if (!editor._.menuItems.editCiteCmd) {
+      editor.addMenuGroup('cite');
+      editor.contextMenu.addListener((element) => {
+        // check element is sup[data-footnote-id]
+        const ascendant = element.getAscendant(
+          (el) => {
+            try {
+              return el.hasClass('cke_widget_focused') &&
+                  el.find('.sup[data-footnote-id]').$.length;
+            } catch (e) {
+              return null;
             }
-            //prevent an endless loop of reorderingMarkers on change
-            setTimeout(function() {
-                localStorage.removeItem(_reorderMarkersTsKey);
-            }, 200);
-        }, 1000);
-    });
-},
-
-editingAFootnote: function(evt) {
-    var footnoteSection =
-        evt.editor
-            .getSelection()
-            .getStartElement()
-            .getAscendant('section');
-    return !!(footnoteSection &&
-    footnoteSection.$.className.indexOf('footnotes') !== -1);
-},
-
-updateMarkersWithCurrentCitationValuesOnEditorChange: function() {
-    var self = this;
-    _editor.on('change', function(evt) {
-        //store the current value of footnotes citations against
-        //their inline citations as they may have been changed
-        //by the user and will be needed when footnotes are rebuilt
-        //get the current footnotes section header
-        var $footnotesHeader =
-            _$contents.find('.footnotes header h2').html();
-        _$contents.find('.footnotes li .cite').each(function(){
-            var $cite = $(this);
-            var footnoteId = $(this).parent('li').attr('data-footnote-id');
-            _$contents.find('.sup[data-footnote-id='+ footnoteId +']').each(function(){
-                $(this).attr('data-citation-modified',
-                    self.replaceQuotesWithPlaceholder($cite.html()));
-                if ($footnotesHeader)
-                    $(this).attr('data-footnotes-heading',
-                        self.replaceQuotesWithPlaceholder(
-                            $footnotesHeader));
-            });
-        });
-    });
-},
-
-invokeIntextCiteDialogOnDoubleClick: function() {
-    _editor.on('doubleclick', function(ev) {
-        var el = _editor.getSelection().getStartElement();
-        if (el.hasClass('cke_widget_focused') &&
-            el.find('.sup[data-footnote-id]').$.length) {
-            _editor.execCommand('intext_cite');
+          },
+          true);
+        if (ascendant) {
+          return {
+            editCiteCmd : CKEDITOR.TRISTATE_ON,
+          };
         }
-    });
-},
-
-initMenuOnInstanceReady: function() {
-    //add the Edit In-Text Citation right click menu item when right clicking
-    //in-text citations, remove the copy/cut/paste items.
-    CKEDITOR.on('instanceReady', function(ev) {
-        if (!_editor._.menuItems.editCiteCmd) {
-            _editor.addMenuGroup('cite');
-            var editCiteCmd = {
-                command : 'editCiteCmd',
-                group : 'cite'
-            };
-            _editor.contextMenu.addListener(function(element, selection ) {
-                //check element is sup[data-footnote-id]
-                var ascendant = element.getAscendant( function( el ) {
-                    try {
-                        return el.hasClass('cke_widget_focused') &&
-                            el.find('.sup[data-footnote-id]').$.length;
-                    }
-                    catch(e) {
-                        return null;
-                    }
-                }, true);
-                if (ascendant) {
-                    return {
-                        editCiteCmd : CKEDITOR.TRISTATE_ON
-                    };
-                }
-            });
-            _editor.addMenuItems({
-                editCiteCmd : {
-                    label : 'Edit In-text Citation',
-                    command : 'intext_cite',
-                    group : 'cite',
-                    order : 2
-                }
-            });
-            _editor.removeMenuItem('paste');
-            _editor.removeMenuItem('copy');
-            _editor.removeMenuItem('cut');
-        }
-    });
-},
+      });
+      editor.addMenuItems({
+        editCiteCmd : {
+          label : 'Edit In-text Citation',
+          command : 'intext_cite',
+          group : 'cite',
+          order : 2,
+        },
+      });
+      editor.removeMenuItem('paste');
+      editor.removeMenuItem('copy');
+      editor.removeMenuItem('cut');
+    }
+  });
+};
 
 export default () => {
   const editor = store.get('editor');
-  retrieveContentsAndReorderMarkersOnInstanceReady();
-  moveCursorAfterFocusedWidgetOnEditorBlur();
-  reorderMarkersOnEditorChange();
-  updateMarkersWithCurrentCitationValuesOnEditorChange();
-  invokeIntextCiteDialogOnDoubleClick();
-  initMenuOnInstanceReady();
+  const $contents = store.get('contents');
+  retrieveContentsAndReorderMarkersOnInstanceReady(editor);
+  moveCursorAfterFocusedWidgetOnEditorBlur(editor, $contents);
+  reorderMarkersOnEditorChange(editor);
+  updateMarkersWithCurrentCitationValuesOnEditorChange(editor, $contents);
+  invokeIntextCiteDialogOnDoubleClick(editor);
+  initMenuOnInstanceReady(editor);
 };
