@@ -19,13 +19,13 @@ const insert = (footnote, inlineCitation, externalId) => {
     moveCursorAfterFocusedWidget(editor, $contents);
   }
 
-  this.removeDataInlineCitElsThatArentMarkers();
-  this.moveTextOutsideBracketsOutOfDataInlineCitEls();
-  this.moveTextOutsideBracketsOutOfDataInlineCitAutonumEls();
-  this.initInlineCitationAndFootnoteData(footnote, inlineCitation, externalId);
-  this.createFootnoteIfDoesntExist();
-  this.generateInlineCitationHtml();
-  this.insertInlineCitationAndFormat();
+  removeDataInlineCitElsThatArentMarkers();
+  moveTextOutsideBracketsOutOfDataInlineCitEls();
+  moveTextOutsideBracketsOutOfDataInlineCitAutonumEls();
+  initInlineCitationAndFootnoteData(footnote, inlineCitation, externalId);
+  createFootnoteIfDoesntExist();
+  generateInlineCitationHtml();
+  insertInlineCitationAndFormat();
 
   // create a dummy span so that below we can place the cursor after the inserted marker
   // allowing the user to continue typing after insert
