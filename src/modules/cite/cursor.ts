@@ -1,5 +1,7 @@
 declare var $: any;
 
+const bookmarkAttr = 'data-selection-bookmark';
+const bookmarkSelector = `[${bookmarkAttr}]`;
 const cursorAfterWidgetClass = 'dummyF';
 const cursorAfterWidgetHtml =
 `<span class="${cursorAfterWidgetClass}">&nbsp;</span>`;
@@ -17,5 +19,28 @@ const moveCursorAfterFocusedWidget = (editor : any, $contents : any) => {
   });
 };
 
+const createCursorBookmarkReturnContainingElement = (editor) => {
+  const slct = editor.getSelection();
+  const bookmark = slct.createBookmarks();
+  if (bookmark[0]) $(bookmark[0].startNode.$).attr(bookmarkAttr, '1');
+  return slct.getRanges()[0];
+};
+
+const removeExistingCursorBookmark = ($contents) => {
+  $contents.find(bookmarkSelector).remove();
+  $contents.find('span').filter(function () {
+    return $(this).html() === '&nbsp;';
+  }).remove();
+};
+
+const setCursorBookmark = (editor, $contents) => {
+  if (!editor) return;
+  if (!$contents) return;
+
+  removeExistingCursorBookmark($contents);
+  return createCursorBookmarkReturnContainingElement(editor);
+};
+
 export { cursorAfterWidgetClass, cursorAfterWidgetHtml,
-  cursorAfterWidgetSelector, moveCursorAfterFocusedWidget };
+  cursorAfterWidgetSelector, moveCursorAfterFocusedWidget,
+  setCursorBookmark };

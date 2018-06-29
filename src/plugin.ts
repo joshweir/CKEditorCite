@@ -332,7 +332,7 @@ declare var $: any;
         _editor.focus();
     },*/
 
-    setCursorBookmark: function() {
+    /*setCursorBookmark: function() {
         if(!_editor) return;
         if(!_$contents) return;
         this.removeExistingCursorBookmark();
@@ -353,7 +353,7 @@ declare var $: any;
             $(bookmark[0].startNode.$)
                 .attr(_bookmarkAttr, '1');
         return slct.getRanges()[0];
-    },
+    },*/
 
     isValidHtml: function(html) {
         /*
@@ -498,7 +498,7 @@ declare var $: any;
                 return $(this).attr('data-ext-id');
             }).toArray() || [];
     },
-
+    
     initInlineCitationAndFootnoteData: function(footnote, inlineCitation,
                                                 externalId) {
         _footnote = this.replaceQuotesWithPlaceholder(
@@ -584,8 +584,6 @@ declare var $: any;
         else if (_adjacentInlineCitationAutonumRef)
             this.insertInlineCitationAutonumWithinAdjacentGroup();
         else {
-            //this.moveCursorToCursorBookmark();
-            //_editor.insertHtml(_footnoteMarker);
             var self = this;
             _$contents.find(_bookmarkSelector).each(function(){
                 var $this = $(this);
@@ -863,7 +861,7 @@ declare var $: any;
         _footnoteIds.push(id);
         return id;
     },
-
+    /*
     reorderMarkers: function(context) {
         _editor.fire('lockSnapshot');
         var prefix  = _editor.config.footnotesPrefix ?
@@ -965,7 +963,9 @@ declare var $: any;
         }
         _editor.fire('unlockSnapshot');
     },
+    */
 
+    /*
     removeDataInlineCitElsThatArentMarkers: function() {
         _$contents.find('[data-inline-cit]').each(function(){
             var $this = $(this);
@@ -1210,7 +1210,7 @@ declare var $: any;
             $(this).remove();
         });
     },
-
+    */
     moveCursorToCursorBookmark: function() {
         var range = _editor.createRange();
         var $dummySpan = _editor.document.find(_bookmarkSelector).getItem(0);
