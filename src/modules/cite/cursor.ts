@@ -1,3 +1,6 @@
+import { reduce } from 'ramda';
+import { zeroLengthStringsRegexp } from './utils';
+
 declare var $: any;
 
 const bookmarkAttr = 'data-selection-bookmark';
@@ -6,6 +9,85 @@ const cursorAfterWidgetClass = 'dummyF';
 const cursorAfterWidgetHtml =
 `<span class="${cursorAfterWidgetClass}">&nbsp;</span>`;
 const cursorAfterWidgetSelector = `span.${cursorAfterWidgetClass}`;
+
+const iterateSiblingsUntilInlineCitOrNonZeroTextFound =
+(prevOrNext, currentSib, inlineCitAttr) => {
+  let currentSibling = currentSib;
+  let citVal = null;
+  while (true) {
+    if (!currentSibling) break;
+    const $currentSibling = $(currentSibling);
+    const currentSiblingCitAttr = $currentSibling.attr(inlineCitAttr);
+    if (currentSiblingCitAttr) {
+      citVal = currentSiblingCitAttr;
+      break;
+    } else if ($currentSibling.text()
+      .replace(zeroLengthStringsRegexp(), '').length > 0) break;
+    else currentSibling = currentSibling[prevOrNext];
+  }
+  return citVal;
+};
+
+const cursorAdjacentToCitationSeparatedByZeroSpaceText =
+(siblings, inlineCitAttr) => (
+  reduce(
+    (acc, val) => (
+      acc ||
+      iterateSiblingsUntilInlineCitOrNonZeroTextFound(
+        val,
+        siblings[val] && siblings[val][0],
+        inlineCitAttr)
+    ),
+    null,
+    ['nextSibling', 'previousSibling'])
+);
+
+const cursorElementAdjacentToCitationBlock = siblings => (
+  siblings.nextSiblingInlineCitAttr || siblings.prevSiblingInlineCitAttr
+);
+
+const getSiblingsEitherSideOfCursor =
+bookmarkSelector => inlineCitAttr => ($contents) => {
+  const siblings = {
+    nextSibling: <any>null,
+    prevSibling: <any>null,
+    nextSiblingInlineCitAttr: <any>null,
+    prevSiblingInlineCitAttr: <any>null,
+  };
+  const $bookmark = $contents.find(bookmarkSelector);
+  siblings.nextSibling = $bookmark[0] && $($bookmark[0].nextSibling);
+  siblings.prevSibling = $bookmark[0] && $($bookmark[0].previousSibling);
+  siblings.nextSiblingInlineCitAttr = siblings.nextSibling &&
+      siblings.nextSibling.attr(inlineCitAttr);
+  siblings.prevSiblingInlineCitAttr = siblings.prevSibling &&
+      siblings.prevSibling.attr(inlineCitAttr);
+  return siblings;
+};
+
+const cursorElementInsideCitationBlock =
+bookmarkSelector => inlineCitAttr => ($contents) => {
+  let $inside = null;
+  $contents.find(`[${inlineCitAttr}]`).each((_, el) => {
+    const $el = $(el);
+    if ($el.find(bookmarkSelector).length) {
+      $inside = $el;
+      return false;
+    }
+  });
+  return $inside && $inside.length ?
+    $inside.attr(inlineCitAttr) : null;
+};
+
+const cursorTouchingInlineCitation = bookmarkSelector => attr => ($contents) => {
+  let citVal = cursorElementInsideCitationBlock(bookmarkSelector)(attr)($contents);
+  if (!citVal) {
+    const siblings = getSiblingsEitherSideOfCursor(bookmarkSelector)(attr)($contents);
+    citVal = cursorElementAdjacentToCitationBlock(siblings) ||
+      cursorAdjacentToCitationSeparatedByZeroSpaceText(
+        siblings, attr);
+  }
+  return citVal;
+};
 
 const moveCursorAfterFocusedWidget = (editor : any, $contents : any) => {
   const range = editor.createRange();
@@ -41,6 +123,7 @@ const setCursorBookmark = (editor, $contents) => {
   return createCursorBookmarkReturnContainingElement(editor);
 };
 
-export { cursorAfterWidgetClass, cursorAfterWidgetHtml,
-  cursorAfterWidgetSelector, moveCursorAfterFocusedWidget,
+export { bookmarkAttr, bookmarkSelector, cursorAfterWidgetClass,
+  cursorAfterWidgetHtml, cursorAfterWidgetSelector,
+  cursorTouchingInlineCitation, moveCursorAfterFocusedWidget,
   setCursorBookmark };

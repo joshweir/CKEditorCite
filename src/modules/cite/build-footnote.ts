@@ -1,7 +1,7 @@
 import { revertQuotesPlaceholder } from './utils';
 
-export default (
-  prefix, footnoteId, footnoteText, inlineCitation, externalId) => (
+const buildFootnote =
+(prefix, footnoteId, footnoteText, inlineCitation, externalId) => (
   '<li id="footnote' + prefix + '-' + footnoteId +
   '" data-footnote-id="' + footnoteId + '"' +
   (inlineCitation ? ' data-inline-citation="' + inlineCitation + '"' : '') +
@@ -9,3 +9,5 @@ export default (
   '<span class="cite">' +
   revertQuotesPlaceholder(footnoteText) + '</span></li>'
 );
+
+export default buildFootnote;

@@ -1,8 +1,12 @@
-import { compose, join, map, prop, reduce, reverse } from 'ramda';
-import { cursorAfterWidgetHtml, moveCursorAfterFocusedWidget,
-  setCursorBookmark } from './cursor';
+import { compose, join, map, prop, reduce, reverse, toPairs } from 'ramda';
+import buildFootnote from './build-footnote';
+import { footnotesPrefix } from '../ck-functional';
+import { bookmarkSelector, cursorAfterWidgetHtml, cursorTouchingInlineCitation,
+  moveCursorAfterFocusedWidget, setCursorBookmark } from './cursor';
 import reorderCitations from './reorder-citations';
 import store from '../store/store';
+import { removeOuterBrackets, replaceDivWithSpan,
+  replaceQuotesWithPlaceholder } from './utils';
 
 declare var $: any;
 
@@ -150,16 +154,16 @@ const removeDataInlineCitElsThatArentMarkers = ($contents) => {
   });
 };
 
-createFootnoteIfDoesntExist: function() {
-    if (!_footnoteId) {
-        _footnoteId = this.generateFootnoteId();
-        _editor.fire('lockSnapshot');
-        this.addFootnote(
-            this.buildFootnote(
-                _footnoteId, _footnote, _inlineCitation, _externalId));
-        _editor.fire('unlockSnapshot');
-    }
-},
+const createFootnoteIfDoesntExist =
+(editor, prefix, footnoteId, footnote, inlineCitation, externalId) => {
+  if (!footnoteId) {
+    editor.fire('lockSnapshot');
+    addFootnote(
+      buildFootnote(
+        prefix, generateFootnoteId(), footnote, inlineCitation, externalId));
+    editor.fire('unlockSnapshot');
+  }
+};
 
 generateInlineCitationHtml: function() {
     _footnoteMarker = (_inlineCitation &&
@@ -236,7 +240,7 @@ insertInlineCitationAndFormat: function() {
                 new CKEDITOR.dom.element(this),
                 'footnotemarker' );
     });
-    this.updateInlineCitationDataAttrs();
+    updateInlineCitationDataAttrs();
 },
 
 insertInlineCitationWithinAdjacentGroup: function() {
@@ -304,9 +308,9 @@ removeDuplicatedDataInlineCitAttributes: function() {
     }
 },
 
-updateInlineCitationDataAttrs: function() {
-    this.removeDuplicatedDataInlineCitAttributes();
-    _$contents = $(_editor.editable().$);
+const updateInlineCitationDataAttrs = (editor, $contents) => {
+    removeDuplicatedDataInlineCitAttributes();
+    $contents = $(_editor.editable().$);
     _$contents.find('.sup[data-footnote-id]:contains(X)')
         .attr('data-citation', _footnote)
         .attr('data-citation-modified', _footnote);
@@ -315,21 +319,33 @@ updateInlineCitationDataAttrs: function() {
             .attr('data-inline-citation', _inlineCitation);
 },
 
+const isFootnote = footnote => (acc, [k, v]) => (
+  acc || (v === replaceQuotesWithPlaceholder(footnote) && k)
+);
+
+const findFootnote = (editor, footnote) => {
+  if (!editor.footnotesStore) return null;
+  return reduce(isFootnote(footnote), null, toPairs(editor.footnotesStore));
+};
+
 const initInlineCitationAndFootnoteData =
-(footnote, inlineCitation, externalId) {
+(editor, $contents, footnote, inlineCitation, externalId, bookmarkSel) => {
   const footnoteCleansed =
   replaceQuotesWithPlaceholder(replaceDivWithSpan(footnote));
-  const footnoteId = findFootnote(footnoteCleansed);
+  const footnoteId = findFootnote(editor, footnoteCleansed);
   const inlineCitationCleansed = inlineCitation ?
     compose(
       removeOuterBrackets,
       replaceQuotesWithPlaceholder,
       replaceDivWithSpan)(inlineCitation) : null;
-  const adjacentInlineCitationRef = cursorTouchingInlineCitation();
+  const cursorTouchingInlineCit =
+  cursorTouchingInlineCitation(bookmarkSel)($contents);
+  const adjacentInlineCitationRef = cursorTouchingInlineCit('data-inline-cit');
   if (!adjacentInlineCitationRef) {
-    const adjacentInlineCitationAutonumRef = cursorTouchingInlineCitationAutonum();
+    const adjacentInlineCitationAutonumRef =
+    cursorTouchingInlineCit('data-inline-cit-autonum');
   }
-},
+};
 
 const insert = (footnote, inlineCitation, externalId) => {
   const editor = store.get('editor');
@@ -348,8 +364,10 @@ const insert = (footnote, inlineCitation, externalId) => {
   removeDataInlineCitElsThatArentMarkers($contents);
   moveTextOutsideBracketsOutOfDataInlineCitEls(editor, $contents);
   moveTextOutsideBracketsOutOfDataInlineCitAutonumEls(editor, $contents);
-  initInlineCitationAndFootnoteData(footnote, inlineCitation, externalId);
-  createFootnoteIfDoesntExist();
+  initInlineCitationAndFootnoteData(
+    editor, $contents, footnote, inlineCitation, externalId, bookmarkSelector);
+  createFootnoteIfDoesntExist(
+    editor, footnotesPrefix(editor), footnoteId, footnote, inlineCitation, externalId);
   generateInlineCitationHtml();
   insertInlineCitationAndFormat();
 

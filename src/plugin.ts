@@ -6,26 +6,6 @@ declare var CKEDITOR: any;
 declare var jQuery: any;
 declare var $: any;
 
-
-  // functional string utilities
-  var replace = function (to, from, str) { return str.replace(from, to); };
-  var replaceC = curry(replace);
-
-  //dom element utilities
-  var renameDOMElementInStr = function (to, from, str) {
-    var fromOpenRegexp = new RegExp('<' + from, 'g');
-    var toOpen = '<' + to;
-    var fromCloseRegexp = new RegExp('<\/' + from, 'g');
-    var toClose = '</' + to;
-    var replaceOpenTags = replaceC(toOpen)(fromOpenRegexp);
-    var replaceCloseTags = replaceC(toClose)(fromCloseRegexp);
-    return compose(replaceCloseTags, replaceOpenTags)(str);
-  }
-
-  var replaceDivWithSpan = function (text) {
-    return renameDOMElementInStr('span', 'div', text);
-  };
-
   var _editor, _$contents, _footnote, _inlineCitation,
       _adjacentInlineCitationRef, _adjacentInlineCitationAutonumRef,
       _footnoteId, _footnoteMarker, _externalId,
@@ -498,7 +478,7 @@ declare var $: any;
                 return $(this).attr('data-ext-id');
             }).toArray() || [];
     },
-    
+    /*
     initInlineCitationAndFootnoteData: function(footnote, inlineCitation,
                                                 externalId) {
         _footnote = this.replaceQuotesWithPlaceholder(
@@ -755,7 +735,7 @@ declare var $: any;
                 break;
         return citVal;
     },
-
+    
     iterateSiblingsUntilInlineCitOrNonZeroTextFound: function(
         prevOrNext, currentSibling, inlineCitAttr) {
         var zeroLenStringRegexp = this.zeroLengthStringsRegexp(),
@@ -778,39 +758,7 @@ declare var $: any;
         }
         return citVal;
     },
-
-    zeroLengthStringsRegexp: function() {
-        return new RegExp("[\u0000\u0007\u0008\u001A" +
-            "\u001B\u007F\u200B-\u200F\uFEFF]", "g");
-    },
-
-    findFootnote: function(footnote) {
-        if (!_editor.footnotesStore)
-            return null;
-        var footnoteId = null;
-        for (var key in _editor.footnotesStore) {
-            if (_editor.footnotesStore.hasOwnProperty(key)) {
-                if (_editor.footnotesStore[key] ===
-                    this.replaceQuotesWithPlaceholder(footnote)) {
-                    footnoteId = key;
-                    break;
-                }
-            }
-        }
-        return footnoteId;
-    },
-
-    buildFootnote: function(footnoteId, footnoteText, inlineCitation, externalId) {
-        var prefix  = _editor.config.footnotesPrefix ? '-' +
-            _editor.config.footnotesPrefix : '';
-        return '<li id="footnote' + prefix + '-' + footnoteId +
-            '" data-footnote-id="' + footnoteId + '"' +
-            (inlineCitation ? ' data-inline-citation="' + inlineCitation + '"' : '') +
-            (externalId && externalId.toString().length ? ' data-ext-id="' + externalId + '"' : '') + '>' +
-            '<span class="cite">' +
-            this.revertQuotesPlaceholder(footnoteText) + '</span></li>';
-    },
-
+    */
     addFootnote: function(footnote, replace) {
         //var $contents  = $(_editor.editable().$);
         var $footnotes = _$contents.find('.footnotes');
