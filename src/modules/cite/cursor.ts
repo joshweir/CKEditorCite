@@ -101,6 +101,16 @@ const moveCursorAfterFocusedWidget = (editor : any, $contents : any) => {
   });
 };
 
+const moveCursorToCursorBookmark = (editor) => {
+  const range = editor.createRange();
+  const $dummySpan = editor.document.find(bookmarkSelector).getItem(0);
+  if ($dummySpan) {
+    range.setStart($dummySpan, 0);
+    range.setEnd($dummySpan, 0);
+    editor.getSelection().selectRanges([range]);
+  }
+};
+
 const createCursorBookmarkReturnContainingElement = (editor) => {
   const slct = editor.getSelection();
   const bookmark = slct.createBookmarks();
@@ -126,4 +136,4 @@ const setCursorBookmark = (editor, $contents) => {
 export { bookmarkAttr, bookmarkSelector, cursorAfterWidgetClass,
   cursorAfterWidgetHtml, cursorAfterWidgetSelector,
   cursorTouchingInlineCitation, moveCursorAfterFocusedWidget,
-  setCursorBookmark };
+  moveCursorToCursorBookmark, setCursorBookmark };

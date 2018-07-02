@@ -1,13 +1,16 @@
-import { compose, join, map, prop, reduce, reverse, toPairs } from 'ramda';
+import { compose, contains, join, map, prop, reduce, reverse, toPairs } from 'ramda';
 import buildFootnote from './build-footnote';
-import { footnotesPrefix } from '../ck-functional';
+import { footnotesHeaderEls, footnotesPrefix,
+  footnotesTitle } from '../ck-functional';
 import { bookmarkSelector, cursorAfterWidgetHtml, cursorTouchingInlineCitation,
-  moveCursorAfterFocusedWidget, setCursorBookmark } from './cursor';
+  moveCursorAfterFocusedWidget, moveCursorToCursorBookmark,
+  setCursorBookmark } from './cursor';
 import reorderCitations from './reorder-citations';
 import store from '../store/store';
 import { removeOuterBrackets, replaceDivWithSpan,
-  replaceQuotesWithPlaceholder } from './utils';
+  replaceQuotesWithPlaceholder, revertQuotesPlaceholder } from './utils';
 
+declare var CKEDITOR: any;
 declare var $: any;
 
 const cloneJqueryObject = $obj => $('<div/>').html($obj[0].outerHTML).contents();
@@ -154,170 +157,183 @@ const removeDataInlineCitElsThatArentMarkers = ($contents) => {
   });
 };
 
-const createFootnoteIfDoesntExist =
-(editor, prefix, footnoteId, footnote, inlineCitation, externalId) => {
+const removeDuplicatedDataInlineCitAttributes = ($contents) => {
+  let cnt = 1;
+  while (true) {
+    const $inlineCit = $contents.find(`[data-inline-cit=${cnt}]`);
+    if ($inlineCit.length <= 0) break;
+    let inlineCitCnt = 0;
+    $inlineCit.each((_, el) => {
+      if (inlineCitCnt > 0) $(el).removeAttr('data-inline-cit');
+      inlineCitCnt += 1;
+    });
+    cnt += 1;
+  }
+};
+
+const updateInlineCitationDataAttrs =
+$contents => (footnote, inlineCitation) => {
+  removeDuplicatedDataInlineCitAttributes($contents);
+  // $contents = $(_editor.editable().$);
+  $contents.find('.sup[data-footnote-id]:contains(X)')
+    .attr('data-citation', footnote)
+    .attr('data-citation-modified', footnote);
+  if (inlineCitation) {
+    $contents.find('.sup[data-footnote-id]:contains(X)')
+    .attr('data-inline-citation', inlineCitation);
+  }
+};
+
+const insertInlineCitationWithinAdjacentGroup =
+$contents =>
+(footnoteMarker, inlineCitation, adjacentInlineCitationRef,
+ inlineCitAttr = 'data-inline-cit') => {
+  const inlineCitationsOrdered = [];
+  let newCitationAdded = false;
+  const $newFootnote = $(footnoteMarker);
+  let inlineCitationText = null;
+  if (inlineCitAttr === 'data-inline-cit') {
+    inlineCitationText = $(`<div>${inlineCitation}</div>`).text();
+  }
+  $contents.find(`[${inlineCitAttr}=${adjacentInlineCitationRef}` +
+  '] .sup[data-footnote-id]').each((_, el) => {
+    if (inlineCitAttr === 'data-inline-cit') {
+      const existingInlineCitationText =
+      $(`<div>${$(el).attr('data-inline-citation')}</div>`).text();
+      if (!newCitationAdded && inlineCitationText &&
+        inlineCitationText < existingInlineCitationText) {
+        inlineCitationsOrdered.push($newFootnote[0]);
+        newCitationAdded = true;
+      }
+    }
+    inlineCitationsOrdered.push(el);
+  });
+  if (!newCitationAdded) inlineCitationsOrdered.push($newFootnote[0]);
+  const $inlineCit = $contents.find(`[${inlineCitAttr}=${adjacentInlineCitationRef}]`);
+  const [openBracket, closeBracket] = inlineCitAttr === 'data-inline-cit' ?
+    ['(', ')'] : ['[', ']'];
+  $inlineCit.first()
+  .html(
+    `${openBracket}` +
+    `${inlineCitationsOrdered.map(d => d.outerHTML).join(', ')}` +
+    `${closeBracket}`);
+};
+
+const insertInlineCitationAndFormat =
+(editor, $contents) =>
+(footnote, footnoteMarker, adjacentInlineCitationRef,
+ adjacentInlineCitationAutonumRef, inlineCitation) => {
+  if (adjacentInlineCitationRef) {
+    insertInlineCitationWithinAdjacentGroup($contents)(
+      footnoteMarker, inlineCitation, adjacentInlineCitationRef,
+      'data-inline-cit');
+  } else if (adjacentInlineCitationAutonumRef) {
+    insertInlineCitationWithinAdjacentGroup($contents)(
+      footnoteMarker, inlineCitation, adjacentInlineCitationRef,
+      'data-inline-cit-autonum');
+  } else {
+    $contents.find(bookmarkSelector).each((_, el) => {
+      const $this = $(el);
+      $this.replaceWith(footnoteMarker +
+        getHtmlWithoutWidgetMarkup($this[0].outerHTML, editor));
+      return false;
+    });
+    moveCursorToCursorBookmark(editor);
+  }
+  $contents.find('.sup[data-footnote-id]').each((_, el) => {
+    if (!$(el).parent('.cke_widget_wrapper').length) {
+      editor.widgets.initOn(
+        new CKEDITOR.dom.element(el),
+        'footnotemarker');
+    }
+  });
+  updateInlineCitationDataAttrs($contents)(footnote, inlineCitation);
+};
+
+const getNextDataInlineCitNum = attr => ($contents) => {
+  let inlineCitNum = 0;
+  $contents.find(attr).each((_, el) => {
+    const tmpInlineCitNum = parseInt($(el).attr(attr), 10);
+    inlineCitNum = tmpInlineCitNum > inlineCitNum ?
+      tmpInlineCitNum : inlineCitNum;
+  });
+  return inlineCitNum + 1;
+};
+
+const generateInlineCitationHtml = $contents =>
+({ footnoteId, footnote, externalId, adjacentInlineCitationRef,
+  adjacentInlineCitationAutonumRef, inlineCitation }) => (
+  // _footnoteMarker =
+  (inlineCitation && !adjacentInlineCitationRef ?
+    '<span data-inline-cit="' +
+    getNextDataInlineCitNum('[data-inline-cit]')($contents) + '">' : '') +
+  (!inlineCitation && !adjacentInlineCitationAutonumRef ?
+    '<span data-inline-cit-autonum="' +
+    getNextDataInlineCitNum('[data-inline-cit-autonum]')($contents) + '">'
+    : '') +
+  (inlineCitation && !adjacentInlineCitationRef ? '(' : '') +
+  (!inlineCitation && !adjacentInlineCitationAutonumRef ? '[' : '') +
+  '<span class="sup" data-citation="' + footnote +
+  '" data-footnote-id="' + footnoteId + '"' +
+  ' data-citation-modified="' + footnote + '"' +
+  (inlineCitation ? ' data-inline-citation="' + inlineCitation + '"' : '') +
+  (externalId && externalId.toString().length ?
+    ' data-ext-id="' + externalId + '"' : '') + '>X</span>' +
+  (inlineCitation && !adjacentInlineCitationRef ? ')' : '') +
+  (!inlineCitation && !adjacentInlineCitationAutonumRef ? ']' : '') +
+  (inlineCitation && !adjacentInlineCitationRef ? '</span>' : '') +
+  (!inlineCitation && !adjacentInlineCitationAutonumRef ? '</span>' : '')
+);
+
+const addFootnote = (editor, $contents) => (footnote, replace = false) => {
+  const $footnotes = $contents.find('.footnotes');
+  if ($footnotes.length <= 0) {
+    const headerTitle =
+    revertQuotesPlaceholder(
+      $contents
+      .find('.sup[data-footnotes-heading]')
+      .attr('data-footnotes-heading')
+      || footnotesTitle(editor));
+    const [headerElO, headerElC] = footnotesHeaderEls(editor);
+    const container = '<section class="footnotes"><header>' +
+      headerElO + headerTitle + headerElC +
+      '</header><ol>' + footnote + '</ol></section>';
+    // Move cursor to end of content
+    $contents.append(container);
+    $contents.find('section.footnotes').each((_, el) => {
+      if (!$(el).parent('.cke_widget_wrapper').length) {
+        editor.widgets.initOn(
+          new CKEDITOR.dom.element(el),
+          'footnotes');
+      }
+    });
+  } else {
+    const $footnotesOl = $footnotes.find('ol');
+    if (replace) $footnotesOl.html(footnote);
+    else $footnotesOl.append(footnote);
+  }
+};
+
+const generateFootnoteId = () => {
+  const footnoteIds = store.get('footnoteIds');
+  let id;
+  do {
+    id = String(Math.random().toString(36).substr(2, 5));
+  } while (!contains(id, footnoteIds));
+  footnoteIds.push(id);
+  return id;
+};
+
+const createFootnoteIfDoesntExistFactory = (editor, $contents, prefix) =>
+({ footnoteId, footnote, inlineCitation, externalId }) => {
   if (!footnoteId) {
     editor.fire('lockSnapshot');
-    addFootnote(
+    addFootnote(editor, $contents)(
       buildFootnote(
         prefix, generateFootnoteId(), footnote, inlineCitation, externalId));
     editor.fire('unlockSnapshot');
   }
 };
-
-generateInlineCitationHtml: function() {
-    _footnoteMarker = (_inlineCitation &&
-        !_adjacentInlineCitationRef ?
-            '<span data-inline-cit="' +
-            this.getNextDataInlineCitNum() + '">' : '') +
-        (!_inlineCitation &&
-        !_adjacentInlineCitationAutonumRef ?
-            '<span data-inline-cit-autonum="' +
-            this.getNextDataInlineCitAutonumNum() + '">' : '') +
-        (_inlineCitation &&
-        !_adjacentInlineCitationRef ? '(' : '') +
-        (!_inlineCitation &&
-        !_adjacentInlineCitationAutonumRef ? '[' : '') +
-        '<span class="sup" data-citation="'+_footnote+
-        '" data-footnote-id="' + _footnoteId +
-        '"'+
-        ' data-citation-modified="'+_footnote+'"' +
-        (_inlineCitation ?
-            ' data-inline-citation="'+_inlineCitation+'"' :
-            '') +
-        (_externalId && _externalId.toString().length ?
-            ' data-ext-id="'+_externalId+'"' :
-            '') + '>X</span>' +
-        (_inlineCitation && !_adjacentInlineCitationRef ? ')' : '') +
-        (!_inlineCitation && !_adjacentInlineCitationAutonumRef ? ']' : '') +
-        (_inlineCitation && !_adjacentInlineCitationRef ? '</span>' : '') +
-        (!_inlineCitation && !_adjacentInlineCitationAutonumRef ? '</span>' : '');
-},
-
-getNextDataInlineCitNum: function() {
-    var inlineCitNum = 0;
-    //var $contents  = $(this.editor.editable().$);
-    _$contents.find('[data-inline-cit]').each(function(){
-        var tmpInlineCitNum = parseInt($(this).attr('data-inline-cit'));
-        inlineCitNum = (tmpInlineCitNum > inlineCitNum ?
-            tmpInlineCitNum : inlineCitNum);
-    });
-    return inlineCitNum + 1;
-},
-
-getNextDataInlineCitAutonumNum: function() {
-    var inlineCitNum = 0;
-    //var $contents  = $(this.editor.editable().$);
-    _$contents.find('[data-inline-cit-autonum]').each(function(){
-        var tmpInlineCitNum = parseInt($(this).attr('data-inline-cit-autonum'));
-        inlineCitNum = (tmpInlineCitNum > inlineCitNum ?
-            tmpInlineCitNum : inlineCitNum);
-    });
-    return inlineCitNum + 1;
-},
-
-insertInlineCitationAndFormat: function() {
-    if (_adjacentInlineCitationRef)
-        this.insertInlineCitationWithinAdjacentGroup();
-    else if (_adjacentInlineCitationAutonumRef)
-        this.insertInlineCitationAutonumWithinAdjacentGroup();
-    else {
-        var self = this;
-        _$contents.find(_bookmarkSelector).each(function(){
-            var $this = $(this);
-            $this.replaceWith(
-                _footnoteMarker +
-                self.getHtmlWithoutWidgetMarkup(
-                    $this[0].outerHTML)
-            );
-            return false;
-        });
-        this.moveCursorToCursorBookmark();
-    }
-    _$contents.find(".sup[data-footnote-id]").each(function(){
-        if (!$(this).parent('.cke_widget_wrapper').length)
-            _editor.widgets.initOn(
-                new CKEDITOR.dom.element(this),
-                'footnotemarker' );
-    });
-    updateInlineCitationDataAttrs();
-},
-
-insertInlineCitationWithinAdjacentGroup: function() {
-    var inlineCitationsOrdered = [],
-        newCitationAdded = false,
-        $newFootnote = $(_footnoteMarker),
-        inlineCitationText =
-            $('<div>' + _inlineCitation + '</div>').text();
-    _$contents
-        .find('[data-inline-cit='+_adjacentInlineCitationRef+
-            '] .sup[data-footnote-id]')
-        .each(function() {
-            var existingInlineCitationText =
-                $('<div>' + $(this).attr('data-inline-citation') + '</div>').text();
-            if (!newCitationAdded && inlineCitationText &&
-                inlineCitationText < existingInlineCitationText) {
-                inlineCitationsOrdered.push($newFootnote[0]);
-                newCitationAdded = true;
-            }
-            inlineCitationsOrdered.push(this);
-        });
-    if (!newCitationAdded)
-        inlineCitationsOrdered.push($newFootnote[0]);
-    var $inlineCit = _$contents
-        .find('[data-inline-cit='+_adjacentInlineCitationRef+']');
-    $inlineCit.first()
-        .html('(' +
-            inlineCitationsOrdered
-                .map(function(d){return d.outerHTML;}).join(', ') + ')');
-},
-
-insertInlineCitationAutonumWithinAdjacentGroup: function() {
-    var inlineCitationsOrdered = [],
-        $newFootnote = $(_footnoteMarker);
-    _$contents
-        .find('[data-inline-cit-autonum='+_adjacentInlineCitationAutonumRef+
-            '] .sup[data-footnote-id]')
-        .each(function() {
-            inlineCitationsOrdered.push(this);
-        });
-    //if (!newCitationAdded)
-    inlineCitationsOrdered.push($newFootnote[0]);
-    var $inlineCit = _$contents
-        .find('[data-inline-cit-autonum='+_adjacentInlineCitationAutonumRef+']');
-    $inlineCit.first()
-        .html('[' +
-            inlineCitationsOrdered
-                .map(function(d){return d.outerHTML;}).join(', ') + ']');
-},
-
-removeDuplicatedDataInlineCitAttributes: function() {
-    var cnt = 1;
-    while (true) {
-        var $inlineCit = _$contents
-                .find('[data-inline-cit='+cnt+']'),
-            inlineCitCnt = 0;
-        if ($inlineCit.length <= 0)
-            break;
-        $inlineCit.each(function(){
-            if (inlineCitCnt > 0)
-                $(this).removeAttr('data-inline-cit');
-            inlineCitCnt++;
-        });
-        cnt++;
-    }
-},
-
-const updateInlineCitationDataAttrs = (editor, $contents) => {
-    removeDuplicatedDataInlineCitAttributes();
-    $contents = $(_editor.editable().$);
-    _$contents.find('.sup[data-footnote-id]:contains(X)')
-        .attr('data-citation', _footnote)
-        .attr('data-citation-modified', _footnote);
-    if (_inlineCitation)
-        _$contents.find('.sup[data-footnote-id]:contains(X)')
-            .attr('data-inline-citation', _inlineCitation);
-},
 
 const isFootnote = footnote => (acc, [k, v]) => (
   acc || (v === replaceQuotesWithPlaceholder(footnote) && k)
@@ -328,8 +344,8 @@ const findFootnote = (editor, footnote) => {
   return reduce(isFootnote(footnote), null, toPairs(editor.footnotesStore));
 };
 
-const initInlineCitationAndFootnoteData =
-(editor, $contents, footnote, inlineCitation, externalId, bookmarkSel) => {
+const initInlineCitationAndFootnoteDataFactory = (editor, $contents) =>
+(footnote, inlineCitation, externalId, bookmarkSel) => {
   const footnoteCleansed =
   replaceQuotesWithPlaceholder(replaceDivWithSpan(footnote));
   const footnoteId = findFootnote(editor, footnoteCleansed);
@@ -341,10 +357,14 @@ const initInlineCitationAndFootnoteData =
   const cursorTouchingInlineCit =
   cursorTouchingInlineCitation(bookmarkSel)($contents);
   const adjacentInlineCitationRef = cursorTouchingInlineCit('data-inline-cit');
+  let adjacentInlineCitationAutonumRef;
   if (!adjacentInlineCitationRef) {
-    const adjacentInlineCitationAutonumRef =
+    adjacentInlineCitationAutonumRef =
     cursorTouchingInlineCit('data-inline-cit-autonum');
   }
+  return { footnoteId, externalId, adjacentInlineCitationRef,
+    adjacentInlineCitationAutonumRef, footnote: footnoteCleansed,
+    inlineCitation: inlineCitationCleansed };
 };
 
 const insert = (footnote, inlineCitation, externalId) => {
@@ -364,12 +384,20 @@ const insert = (footnote, inlineCitation, externalId) => {
   removeDataInlineCitElsThatArentMarkers($contents);
   moveTextOutsideBracketsOutOfDataInlineCitEls(editor, $contents);
   moveTextOutsideBracketsOutOfDataInlineCitAutonumEls(editor, $contents);
-  initInlineCitationAndFootnoteData(
-    editor, $contents, footnote, inlineCitation, externalId, bookmarkSelector);
-  createFootnoteIfDoesntExist(
-    editor, footnotesPrefix(editor), footnoteId, footnote, inlineCitation, externalId);
-  generateInlineCitationHtml();
-  insertInlineCitationAndFormat();
+  const initInlineCitationAndFootnoteData =
+  initInlineCitationAndFootnoteDataFactory(editor, $contents);
+  const createFootnoteIfDoesntExist =
+  createFootnoteIfDoesntExistFactory(editor, $contents, footnotesPrefix(editor));
+  const footnoteData = initInlineCitationAndFootnoteData(
+    footnote, inlineCitation, externalId, bookmarkSelector);
+  const { adjacentInlineCitationRef, adjacentInlineCitationAutonumRef,
+    inlineCitation: inlineCitationCleansed,
+    footnote: footnoteCleansed } = footnoteData;
+  createFootnoteIfDoesntExist(footnoteData);
+  const footnoteMarker = generateInlineCitationHtml($contents)(footnoteData);
+  insertInlineCitationAndFormat(editor, $contents)(
+    footnoteCleansed, footnoteMarker, adjacentInlineCitationRef,
+    adjacentInlineCitationAutonumRef, inlineCitationCleansed);
 
   // create a dummy span so that below we can place the cursor after the inserted marker
   // allowing the user to continue typing after insert

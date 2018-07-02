@@ -14,6 +14,6 @@ export default function (editor : any) {
   // Allow `cite` to be editable:
   CKEDITOR.dtd.$editable['span'] = 1;
   editor.addContentsCss(`${this.path}styles/plugin.css`);
-  store.reset(), store.set({ editor });
+  store.reset(), store.set({ editor }), store.set({ footnoteIds: [] });
   initWidgets(this), initEventHandlers();
 }
