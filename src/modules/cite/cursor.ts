@@ -90,7 +90,6 @@ const cursorTouchingInlineCitation = bookmarkSelector => $contents => (attr) => 
 };
 
 const moveCursorAfterFocusedWidget = (editor : any, $contents : any) => {
-  debugger;
   const range = editor.createRange();
   const $dummySpan =
   editor.document.find(cursorAfterWidgetSelector).getItem(0);

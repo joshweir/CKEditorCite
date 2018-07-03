@@ -240,7 +240,7 @@ const insertInlineCitationAndFormat =
       'data-inline-cit');
   } else if (adjacentInlineCitationAutonumRef) {
     insertInlineCitationWithinAdjacentGroup($contents)(
-      footnoteMarker, inlineCitation, adjacentInlineCitationRef,
+      footnoteMarker, inlineCitation, adjacentInlineCitationAutonumRef,
       'data-inline-cit-autonum');
   } else {
     $contents.find(bookmarkSelector).each((_, el) => {
@@ -263,7 +263,7 @@ const insertInlineCitationAndFormat =
 
 const getNextDataInlineCitNum = attr => ($contents) => {
   let inlineCitNum = 0;
-  $contents.find(attr).each((_, el) => {
+  $contents.find(`[${attr}]`).each((_, el) => {
     const tmpInlineCitNum = parseInt($(el).attr(attr), 10);
     inlineCitNum = tmpInlineCitNum > inlineCitNum ?
       tmpInlineCitNum : inlineCitNum;
@@ -274,13 +274,12 @@ const getNextDataInlineCitNum = attr => ($contents) => {
 const generateInlineCitationHtml = $contents =>
 ({ footnoteId, footnote, externalId, adjacentInlineCitationRef,
   adjacentInlineCitationAutonumRef, inlineCitation }) => (
-  // _footnoteMarker =
   (inlineCitation && !adjacentInlineCitationRef ?
     '<span data-inline-cit="' +
-    getNextDataInlineCitNum('[data-inline-cit]')($contents) + '">' : '') +
+    getNextDataInlineCitNum('data-inline-cit')($contents) + '">' : '') +
   (!inlineCitation && !adjacentInlineCitationAutonumRef ?
     '<span data-inline-cit-autonum="' +
-    getNextDataInlineCitNum('[data-inline-cit-autonum]')($contents) + '">'
+    getNextDataInlineCitNum('data-inline-cit-autonum')($contents) + '">'
     : '') +
   (inlineCitation && !adjacentInlineCitationRef ? '(' : '') +
   (!inlineCitation && !adjacentInlineCitationAutonumRef ? '[' : '') +
@@ -386,10 +385,11 @@ const insert = (footnote, inlineCitation, externalId) => {
     adjacentInlineCitationAutonumRef, inlineCitationCleansed);
   // create a dummy span so that below we can place the cursor after the inserted marker
   // allowing the user to continue typing after insert
+  debugger;
   $(cursorAfterWidgetHtml).insertAfter(
     $contents
     .find('.sup[data-footnote-id]:contains(X)')
-    .closest('[data-inline-cit' + (inlineCitation ? '' : 'autonum') + ']'));
+    .closest('[data-inline-cit' + (inlineCitation ? '' : '-autonum') + ']'));
   reorderCitations(editor);
   // select after the inserted marker widget s
   moveCursorAfterFocusedWidget(editor, $contents);
