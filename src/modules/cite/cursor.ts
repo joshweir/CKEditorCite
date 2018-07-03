@@ -78,7 +78,7 @@ bookmarkSelector => inlineCitAttr => ($contents) => {
     $inside.attr(inlineCitAttr) : null;
 };
 
-const cursorTouchingInlineCitation = bookmarkSelector => attr => ($contents) => {
+const cursorTouchingInlineCitation = bookmarkSelector => $contents => (attr) => {
   let citVal = cursorElementInsideCitationBlock(bookmarkSelector)(attr)($contents);
   if (!citVal) {
     const siblings = getSiblingsEitherSideOfCursor(bookmarkSelector)(attr)($contents);
@@ -90,6 +90,7 @@ const cursorTouchingInlineCitation = bookmarkSelector => attr => ($contents) => 
 };
 
 const moveCursorAfterFocusedWidget = (editor : any, $contents : any) => {
+  debugger;
   const range = editor.createRange();
   const $dummySpan =
   editor.document.find(cursorAfterWidgetSelector).getItem(0);

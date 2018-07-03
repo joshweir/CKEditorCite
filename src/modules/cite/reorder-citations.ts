@@ -1,12 +1,10 @@
+import addFootnote from './add-footnote';
 import buildFootnote from './build-footnote';
 import buildInlineCitation from './build-inline-citation';
 import { find } from '../jquery-functional';
-import { footnotesHeaderEls, footnotesPrefix,
-  footnotesTitle } from '../ck-functional';
-import { revertQuotesPlaceholder } from './utils';
+import { footnotesPrefix } from '../ck-functional';
 import store from '../store/store';
 
-declare var CKEDITOR: any;
 declare var $: any;
 
 const initialData = () => ({
@@ -17,35 +15,6 @@ const initialData = () => ({
   modifiedCitationText: [],
   externalIds: [],
 });
-
-const addFootnote = (editor, $contents, footnote, forceReplace) => {
-  const $footnotes = find('.footnotes', $contents);
-  if ($footnotes.length <= 0) {
-    const dataHeaderTitle =
-    find('.sup[data-footnotes-heading]', $contents)
-    .attr('data-footnotes-heading');
-    const headerTitle =
-    revertQuotesPlaceholder(dataHeaderTitle || footnotesTitle(editor));
-    const [headerOpenTag, headerCloseTag] = footnotesHeaderEls(editor);
-    const container =
-    '<section class="footnotes"><header>' +
-    headerOpenTag + headerTitle + headerCloseTag +
-    '</header><ol>' + footnote + '</ol></section>';
-    $contents.append(container);
-    $contents.find('section.footnotes').each(function () {
-      if (!$(this).parent('.cke_widget_wrapper').length) {
-        editor.widgets.initOn(
-            new CKEDITOR.dom.element(this),
-            'footnotes');
-      }
-    });
-  } else {
-    const footnotesOl = find('ol', $footnotes);
-    forceReplace ?
-      footnotesOl.html(footnote) :
-      footnotesOl.append(footnote);
-  }
-};
 
 const reorderCitations = (editor) => {
   editor.fire('lockSnapshot');
@@ -111,7 +80,7 @@ const reorderCitations = (editor) => {
     editor.footnotesStore[data.order[i]] = data.originalCitationText[i];
   }
   // Insert the footnotes into the list:
-  addFootnote(editor, $contents, footnotes, true);
+  addFootnote(editor, $contents)(footnotes, true);
 
   // Next we need to reinstate the 'editable' properties of the footnotes.
   // (we have to do this individually due to Widgets 'fireOnce' for editable selectors)

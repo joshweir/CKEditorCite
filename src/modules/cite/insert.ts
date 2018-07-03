@@ -1,14 +1,14 @@
-import { compose, contains, join, map, prop, reduce, reverse, toPairs } from 'ramda';
+import { compose, contains, join, map, reduce, reverse, toPairs } from 'ramda';
+import addFootnote from './add-footnote';
 import buildFootnote from './build-footnote';
-import { footnotesHeaderEls, footnotesPrefix,
-  footnotesTitle } from '../ck-functional';
+import { footnotesPrefix } from '../ck-functional';
 import { bookmarkSelector, cursorAfterWidgetHtml, cursorTouchingInlineCitation,
   moveCursorAfterFocusedWidget, moveCursorToCursorBookmark,
   setCursorBookmark } from './cursor';
 import reorderCitations from './reorder-citations';
 import store from '../store/store';
 import { removeOuterBrackets, replaceDivWithSpan,
-  replaceQuotesWithPlaceholder, revertQuotesPlaceholder } from './utils';
+  replaceQuotesWithPlaceholder } from './utils';
 
 declare var CKEDITOR: any;
 declare var $: any;
@@ -26,7 +26,13 @@ const getChildNodesOf = $contents => (
   childNodesOf($contents).map((_, val) => $(val))
 );
 
-const reduceChildNodesUpToFootnoteMarkerOr = bracketPattern => (acc, val) => {
+interface ChildNodesReduced {
+  fin?: boolean;
+  acc: any[];
+}
+
+const reduceChildNodesUpToFootnoteMarkerOr =
+bracketPattern => (acc, val):ChildNodesReduced => {
   if (!acc['fin']) {
     if (val.find('[data-widget=footnotemarker]').length) {
       acc['fin'] = true;
@@ -38,19 +44,24 @@ const reduceChildNodesUpToFootnoteMarkerOr = bracketPattern => (acc, val) => {
   return acc;
 };
 
+const reducedChildNodesUpToFootnoteMarkerOrBracket =
+bracketPattern => (obj: ChildNodesReduced) => (data: any[]): any[] => {
+  return reduce(reduceChildNodesUpToFootnoteMarkerOr(bracketPattern), obj)(data).acc;
+};
+
 const getChildNodesUpToBracket =
 opts => ($contentsChildren: any[] = [], bracketChar: string) => {
   const bracketPattern = new RegExp(`\\${bracketChar}`, 'g');
-  const reducer = opts['reverse'] ?
-  compose(
-    reverse,
-    prop('acc'),
-    reduce(reduceChildNodesUpToFootnoteMarkerOr(bracketPattern), { acc: [] }),
-    reverse) :
+  /*const reducer =
   compose(
     prop('acc'),
     reduce(reduceChildNodesUpToFootnoteMarkerOr(bracketPattern), { acc: [] }));
-  return reducer($contentsChildren);
+  */
+  const reducer = reducedChildNodesUpToFootnoteMarkerOrBracket(bracketPattern)({ acc: [] });
+  // ramda didnt place nice with typescript here, had to hack unfortunately
+  return opts['reverse'] ?
+    reverse(reducer(<any[]>reverse($contentsChildren)))
+    : reducer($contentsChildren);
 };
 
 const getChildNodesBefore1stWidgetUpToOpenBracket =
@@ -285,54 +296,29 @@ const generateInlineCitationHtml = $contents =>
   (!inlineCitation && !adjacentInlineCitationAutonumRef ? '</span>' : '')
 );
 
-const addFootnote = (editor, $contents) => (footnote, replace = false) => {
-  const $footnotes = $contents.find('.footnotes');
-  if ($footnotes.length <= 0) {
-    const headerTitle =
-    revertQuotesPlaceholder(
-      $contents
-      .find('.sup[data-footnotes-heading]')
-      .attr('data-footnotes-heading')
-      || footnotesTitle(editor));
-    const [headerElO, headerElC] = footnotesHeaderEls(editor);
-    const container = '<section class="footnotes"><header>' +
-      headerElO + headerTitle + headerElC +
-      '</header><ol>' + footnote + '</ol></section>';
-    // Move cursor to end of content
-    $contents.append(container);
-    $contents.find('section.footnotes').each((_, el) => {
-      if (!$(el).parent('.cke_widget_wrapper').length) {
-        editor.widgets.initOn(
-          new CKEDITOR.dom.element(el),
-          'footnotes');
-      }
-    });
-  } else {
-    const $footnotesOl = $footnotes.find('ol');
-    if (replace) $footnotesOl.html(footnote);
-    else $footnotesOl.append(footnote);
-  }
-};
-
 const generateFootnoteId = () => {
   const footnoteIds = store.get('footnoteIds');
   let id;
   do {
     id = String(Math.random().toString(36).substr(2, 5));
-  } while (!contains(id, footnoteIds));
+  } while (contains(id, footnoteIds));
   footnoteIds.push(id);
   return id;
 };
 
 const createFootnoteIfDoesntExistFactory = (editor, $contents, prefix) =>
-({ footnoteId, footnote, inlineCitation, externalId }) => {
+(footnoteData) => {
+  let { footnoteId } = footnoteData;
+  const { footnote, inlineCitation, externalId } = footnoteData;
   if (!footnoteId) {
     editor.fire('lockSnapshot');
+    footnoteId = generateFootnoteId();
     addFootnote(editor, $contents)(
       buildFootnote(
-        prefix, generateFootnoteId(), footnote, inlineCitation, externalId));
+        prefix, footnoteId, footnote, inlineCitation, externalId));
     editor.fire('unlockSnapshot');
   }
+  return { ...footnoteData, footnoteId };
 };
 
 const isFootnote = footnote => (acc, [k, v]) => (
@@ -386,19 +372,18 @@ const insert = (footnote, inlineCitation, externalId) => {
   moveTextOutsideBracketsOutOfDataInlineCitAutonumEls(editor, $contents);
   const initInlineCitationAndFootnoteData =
   initInlineCitationAndFootnoteDataFactory(editor, $contents);
-  const createFootnoteIfDoesntExist =
-  createFootnoteIfDoesntExistFactory(editor, $contents, footnotesPrefix(editor));
   const footnoteData = initInlineCitationAndFootnoteData(
     footnote, inlineCitation, externalId, bookmarkSelector);
   const { adjacentInlineCitationRef, adjacentInlineCitationAutonumRef,
     inlineCitation: inlineCitationCleansed,
     footnote: footnoteCleansed } = footnoteData;
-  createFootnoteIfDoesntExist(footnoteData);
-  const footnoteMarker = generateInlineCitationHtml($contents)(footnoteData);
+  const createFootnoteIfDoesntExist =
+  createFootnoteIfDoesntExistFactory(editor, $contents, footnotesPrefix(editor));
+  const footnoteMarker = generateInlineCitationHtml($contents)(
+    createFootnoteIfDoesntExist(footnoteData));
   insertInlineCitationAndFormat(editor, $contents)(
     footnoteCleansed, footnoteMarker, adjacentInlineCitationRef,
     adjacentInlineCitationAutonumRef, inlineCitationCleansed);
-
   // create a dummy span so that below we can place the cursor after the inserted marker
   // allowing the user to continue typing after insert
   $(cursorAfterWidgetHtml).insertAfter(

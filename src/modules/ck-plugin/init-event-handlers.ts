@@ -19,11 +19,12 @@ const retrieveContentsAndReorderMarkersOnInstanceReady = (editor : any) => {
 };
 
 const moveCursorAfterFocusedWidgetOnEditorBlur =
-(editor : any, $contents : any) => {
+(editor : any) => {
   // unselect any focused sup widgets if user clicks away from the editor,
   // as if they then going to insert a citation external to ckeditor,
   // we dont want to overwrite any existing citation markers
   editor.on('blur', () => {
+    const $contents = $(contentFrom(editor));
     if (editor.widgets.focused) {
       $(cursorAfterWidgetHtml)
       .insertAfter($(editor.widgets.focused.element.$).parent());
@@ -74,8 +75,9 @@ const reorderMarkersOnEditorChange = (editor : any) => {
 };
 
 const updateMarkersWithCurrentCitationValuesOnEditorChange =
-(editor : any, $contents : any) => {
+(editor : any) => {
   editor.on('change', () => {
+    const $contents = $(contentFrom(editor));
     // store the current value of footnotes citations against
     // their inline citations as they may have been changed
     // by the user and will be needed when footnotes are rebuilt
@@ -152,11 +154,10 @@ const initMenuOnInstanceReady = (editor : any) => {
 
 export default () => {
   const editor = store.get('editor');
-  const $contents = store.get('contents');
   retrieveContentsAndReorderMarkersOnInstanceReady(editor);
-  moveCursorAfterFocusedWidgetOnEditorBlur(editor, $contents);
+  moveCursorAfterFocusedWidgetOnEditorBlur(editor);
   reorderMarkersOnEditorChange(editor);
-  updateMarkersWithCurrentCitationValuesOnEditorChange(editor, $contents);
+  updateMarkersWithCurrentCitationValuesOnEditorChange(editor);
   invokeIntextCiteDialogOnDoubleClick(editor);
   initMenuOnInstanceReady(editor);
 };
